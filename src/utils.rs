@@ -15,7 +15,7 @@ pub fn get_random_in_range(start: i32, end: i32) -> i32 {
   //     }
   // }
 }
-pub fn get_random_from_vector(slice: &std::vec::Vec<String>) -> String {
+pub fn get_random_from_vector(slice: &Vec<String>) -> String {
   let mut rng = rand::thread_rng();
   if let Some(randomly_picked) = slice.choose(&mut rng) {
     format!("{}", randomly_picked)
@@ -23,7 +23,11 @@ pub fn get_random_from_vector(slice: &std::vec::Vec<String>) -> String {
     String::new()
   }
 }
-// pub fn get_random_from_vector(slice: &[usize]) -> &str {
-//   let mut rng = rand::thread_rng();
-//   format!("{:?}", slice.choose(&mut rng))
-// }
+pub fn get_random_from_vector_ref(slice: &[usize]) -> String {
+  let mut rng = rand::thread_rng();
+  if let Some(result) = &slice.choose(&mut rng) {
+    format!("{}", result)
+  } else {
+    String::new()
+  }
+}
