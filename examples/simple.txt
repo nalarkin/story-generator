@@ -1,0 +1,3 @@
+<noun> = <T> | <T> <P>
+<P> = Mike
+<T> = The
