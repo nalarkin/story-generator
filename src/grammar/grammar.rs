@@ -1,28 +1,47 @@
 use crate::utils;
+use crate::*;
 use std::collections::HashMap;
 #[derive(Debug)]
 pub struct Grammar {
   pub rules: HashMap<String, Vec<String>>,
   pub validation: HashMap<String, i32>,
+  pub start_nonterminal: String,
 }
 impl Grammar {
   pub fn new() -> Grammar {
     Grammar {
       rules: Default::default(),
       validation: Default::default(),
+      start_nonterminal: Default::default(),
     }
   }
   pub fn rule_add(&mut self, key: &str, value: &str) {
-    let mut parsed = vec![];
-    let split: Vec<&str> = value.split("|").collect();
-    for word in split {
-      parsed.push(String::from(word.trim()));
-    }
+    // let mut parsed = vec![];
+    // let split: Vec<&str> = value.split("|").collect();
+    // for word in split {
+    //   parsed.push(String::from(word.trim()));
+    // }
+
+    let parsed: Vec<String> = value
+      .split("|")
+      .collect::<Vec<&str>>()
+      .iter()
+      .map(|x| String::from(x.trim()))
+      .collect();
     // update a key, guarding against the key possibly not being set
     let right_hand_side = self.rules.entry(key.to_string()).or_insert(vec![]);
     for option in parsed {
       right_hand_side.push(option);
     }
+  }
+
+  pub fn change_start_nonterminal(&mut self, new_value: &str) {
+    self.start_nonterminal = String::from(new_value);
+  }
+
+  pub fn rule_add_from_file(&mut self, rule: Rule) {
+    let key = self.rules.entry(rule.left_hand).or_insert(vec![]);
+    key.extend(rule.right_hand);
   }
   pub fn rule_delete(&mut self, key: &str) {
     if let Some(value_removed) = self.rules.remove(key) {
@@ -58,6 +77,7 @@ impl Grammar {
     if let Some(options) = self.rules.get(key) {
       // split value
       // for each element in split value, find it's value in
+      // println!("options: {:#?}", options);
       let random_choice = utils::get_random_from_vector(options);
       let sub_choices = self.parse_selected_choice(&random_choice);
       let mut built_sentence = String::new();
@@ -163,36 +183,26 @@ fn dfs(
 }
 
 fn parse_subunits(option: &str) -> Vec<String> {
-  let mut all_options = vec![];
-  let options = option.split_whitespace().collect::<Vec<&str>>();
-  for possible in options {
-    all_options.push(String::from(possible.trim()));
-  }
-  all_options
+  // let options = option.split_whitespace();
+  // let options = option.split_whitespace().collect::<Vec<&str>>();
+  let possible_options: Vec<String> = option
+    .split_whitespace()
+    .map(|possible_option| String::from(possible_option.trim()))
+    .collect();
+  possible_options
 }
 /// Simply a function to be more explicit about what is occuring when called
 fn sub_option_is_safe(sub_option: &bool) -> bool {
   sub_option == &true
 }
 
-// fn all_sub_options_are_safe(slice: Vec<bool>) -> bool {
-//   let mut all_is_valid = true;
-//   for value in slice {
-//     if !value {
-//       all_is_valid = false;
-//     }
-//   }
-//   all_is_valid
-// }
-
 fn get_unsafe_keys(status: &HashMap<String, i32>) -> Vec<String> {
-  let mut response = vec![];
-  for (key, value) in status {
-    if value == &Status::UNSAFE {
-      response.push(String::from(key));
-    };
-  }
-  response
+  let unsafe_keys: Vec<String> = status
+    .iter()
+    .filter(|(_, value)| value == &&Status::UNSAFE)
+    .map(|(key, _)| key.to_string())
+    .collect();
+  unsafe_keys
 }
 
 #[cfg(test)]
