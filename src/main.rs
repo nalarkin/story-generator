@@ -12,14 +12,14 @@ fn main() {
   // build_random_sentences(10);
   let args: Vec<String> = env::args().collect();
   let config = Config::new(&args).unwrap_or_else(|err| {
-    println!("Problem parsing arguments: {}", err);
+    eprintln!("Problem parsing arguments: {}", err);
     process::exit(1);
   });
-  println!("Genrating {} sentences.", config.quantity);
-  println!("In file {}", config.filename);
-
+  eprintln!("Generating {} sentences.", config.quantity);
+  eprintln!("In file {}", config.filename);
+  eprintln!("Config: {:#?}", config);
   if let Err(e) = story_graph::run(config) {
-    println!("Application error: {}", e);
+    eprintln!("Application error: {}", e);
     process::exit(1);
   }
 }

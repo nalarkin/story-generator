@@ -1,0 +1,11 @@
+<object-phrase> = <someone> <verb-repeat> <noun>
+
+CP ➝ (C) TP
+TP ➝ {NP/CP} (T) VP
+VP ➝(AdvP+) V (NP)({NP/CP}) (AdvP+) (PP+) (AdvP+)
+NP ➝ (D) (AdjP+) N (PP+) (CP)
+PP ➝ P (NP)
+AdjP ➝ (AdvP) Adj
+AdvP ➝ (AdvP) Adv
+
+prepositions: https://academicguides.waldenu.edu/writingcenter/grammar/prepositions

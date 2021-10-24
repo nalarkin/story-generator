@@ -36,6 +36,23 @@ Navigate the same directory as the `README.md` file and enter the command `cargo
 <verb> = hugged | bit | bird```
 ````
 
+Concepts used to develop this project.
+
+* BNF grammar notation
+  * used to create the grammar 
+* Graph traversal and coloring
+  * used to test validity of grammar rules before generation starts.
+    * Detects if there is at least 1 valid path from each option that is reachable from the starting nonterminal
+    * TODO: Detect that each nonterminal is reachable (test by doing single traversal from the starting nonterminal, and traversing over to see which nodes were visited)
+
+FAQ
+
+* Aren't these grammar rules more like trees than graphs?
+  * **<u>Trees are graphs which have the minimum number of edges connecting all nodes. Thus, for n nodes, there will always be n-1 edges</u>**. These grammars can contain cycles and still be valid, thus, they are more similar to graphs than trees.
+*  
+
+
+
 to develop more complex grammar, you might find the following links helpful
 
 * Grammar rules source: https://grammar.reverso.net/

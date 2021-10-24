@@ -1,0 +1,18 @@
+NP = D NP1 | NP1 
+D = the | a
+NP1 = AdjP NP2 | NP2
+NP2 = N NP3
+// use only nouns that would not cause an a to change into 'an', example apple, orange
+N = dog | cat | teacher | lizard  | store 
+NP3 = PP NP4 | NP4
+NP4 =  ''
+//<NP4> = (CP) | ''
+PP = P NP | P
+AdjP = AdjP Adj | Adj | AdvP Adj
+//change line below to manipulate odds 
+AdvP = AdvP Adv | Adv | Adv | Adv
+Adj = pink | fluffy | tall | small |large | wide |bright
+// use only adverbs that would not cause an a to change into 'an', abruptly
+Adv = very | rather | frequently | firmly | delicately | beautifully | quickly | wearily | willfully
+// preposition 
+P = from | near | off | out of | through | toward | under | within | beside | behind
