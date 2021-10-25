@@ -16,8 +16,8 @@ fn main() {
     process::exit(1);
   });
   eprintln!("Generating {} sentences.", config.quantity);
-  eprintln!("In file {}", config.filename);
-  eprintln!("Config: {:#?}", config);
+  // eprintln!("In file {}", config.filename);
+  // eprintln!("Config: {:#?}", config);
   if let Err(e) = story_graph::run(config) {
     eprintln!("Application error: {}", e);
     process::exit(1);

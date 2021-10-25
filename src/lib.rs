@@ -3,21 +3,10 @@ use std::fs;
 use std::process;
 
 // Special file to declare file structure
-pub mod components {
-  pub mod actor;
-  pub mod location;
-  pub mod world;
-}
-pub mod grammar {
-  pub mod grammar;
-  pub mod sentence;
-  pub mod noun {
-    pub mod noun;
-  }
-}
-
+pub mod grammar;
 pub mod utils;
-// pub mod world;
+
+/// Validates the command line arguments, and stores their values.
 #[derive(Debug)]
 pub struct Config {
   pub filename: String,
@@ -62,14 +51,14 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
   if parsed_rules.len() == 0 {
     panic!("unable to parse file or file is empty");
   }
-  let mut grammar = grammar::grammar::Grammar::new();
+  let mut grammar = grammar::Grammar::new();
   grammar.change_start_nonterminal(&parsed_rules[0].left_hand);
   for rule in parsed_rules {
     grammar.rule_add_from_file(rule);
   }
   let unreachable = grammar.get_unreachable_nonterminals();
   match unreachable.len() {
-    0 => eprintln!("No unreachable non-terminals."),
+    0 => eprintln!("Successful grammar rules. No unreachable non-terminals."),
     _ => eprintln!("Warning: Unreachable non-terminals: {:#?}", unreachable),
   }
 
@@ -83,7 +72,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 }
 
 /// Converts generated sentences into paragraphs of given sentence length
-fn convert_sentences_to_paragraphs(slice: &Vec<String>, length: &i32) -> Vec<String> {
+fn convert_sentences_to_paragraphs(slice: &[String], length: &i32) -> Vec<String> {
   let mut paragraphs = vec![];
   let mut idx = 0;
   while idx < slice.len() {
@@ -101,7 +90,7 @@ fn convert_sentences_to_paragraphs(slice: &Vec<String>, length: &i32) -> Vec<Str
 
 /// Convert lines from a file into grammar rules
 /// Program exits if any lines do not follow the rules listed in the README.md
-fn parse_file(lines: &Vec<&str>) -> Vec<Rule> {
+fn parse_file(lines: &[&str]) -> Vec<Rule> {
   let mut rules = vec![];
   for line in lines.iter() {
     if !should_ignore_line(line) {
@@ -119,7 +108,6 @@ fn should_ignore_line(line: &&str) -> bool {
   line.trim().starts_with("//")
 }
 
-#[derive(Debug, Default)]
 /// Represents a grammar rule formed from a single line in the file provided.
 /// # Example
 /// ```
@@ -134,6 +122,7 @@ fn should_ignore_line(line: &&str) -> bool {
 /// assert_eq!(example_failure.left_hand, expected.left_hand);
 /// assert_eq!(example_failure.right_hand, expected.right_hand);
 /// ```
+#[derive(Debug, Default)]
 pub struct Rule {
   pub left_hand: String,
   pub right_hand: Vec<String>,

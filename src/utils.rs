@@ -3,19 +3,11 @@ use rand::seq::SliceRandom;
 // use rand;
 pub fn get_random_in_range(start: i32, end: i32) -> i32 {
   let mut rng = rand::thread_rng();
-  let die = Uniform::from(start..end);
-  let throw = die.sample(&mut rng);
-  return throw;
-
-  // loop {
-  //     let throw = die.sample(&mut rng);
-  //     println!("Roll the die: {}", throw);
-  //     if throw == 6 {
-  //         break;
-  //     }
-  // }
+  let random_within_range = Uniform::from(start..end);
+  let random_selected = random_within_range.sample(&mut rng);
+  return random_selected;
 }
-pub fn get_random_from_vector(slice: &Vec<String>) -> String {
+pub fn get_random_from_vector(slice: &[String]) -> String {
   let mut rng = rand::thread_rng();
   if let Some(randomly_picked) = slice.choose(&mut rng) {
     format!("{}", randomly_picked)

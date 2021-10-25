@@ -68,11 +68,9 @@ impl Grammar {
   /// otherwise evaulate RHS
   pub fn build_random(&self, key: &str) -> String {
     if let Some(options) = self.rules.get(key) {
-      // split value
-      // for each element in split value, find it's value in
-      // println!("options: {:#?}", options);
       let random_choice = utils::get_random_from_vector(options);
-      let sub_choices = self.parse_selected_choice(&random_choice);
+      // let sub_choices = self.parse_selected_choice(&random_choice);
+      let sub_choices = parse_subunits(&random_choice);
       let mut built_sentence = String::new();
       for token in sub_choices {
         built_sentence.push_str(&self.build_random(&token));
@@ -82,15 +80,14 @@ impl Grammar {
       format!(" {}", key)
     }
   }
-  // fn is_nonterminal(&self, )
-  fn parse_selected_choice(&self, option: &str) -> Vec<String> {
-    let mut all_options = vec![];
-    let options = option.split_whitespace().collect::<Vec<&str>>();
-    for possible in options {
-      all_options.push(String::from(possible.trim()));
-    }
-    all_options
-  }
+  // fn parse_selected_choice(&self, option: &str) -> Vec<String> {
+  //   let mut all_options = vec![];
+  //   let options = option.split_whitespace().collect::<Vec<&str>>();
+  //   for possible in options {
+  //     all_options.push(String::from(possible.trim()));
+  //   }
+  //   all_options
+  // }
 
   fn reset_validation(&mut self) {
     self.validation = Default::default();
@@ -99,7 +96,25 @@ impl Grammar {
     }
   }
 
-  // pub fn validate(&mut self) -> Vec<String> {
+  /// Validates the grammar rules to ensure there are no cycles that are
+  /// gauranteed to go infinitely. Each non-terminal is valid if there is at
+  /// least 1 valid path for the non-terminal, and each non-terminal.
+  /// Note: Recursive rules and cycles are still allowed.
+  /// # Examples
+  /// ```
+  /// // the below is valid
+  /// <noun> = <adj> | <noun>
+  /// <adj> = happy
+  ///
+  /// // the below is valid
+  /// <noun> = <adj> <noun> | <ending>
+  /// <adj> = <noun> | <adj>
+  /// <ending> = abc
+  ///
+  /// // the following is not valid
+  /// <noun> = <verb>
+  /// <verb> = <noun>
+  /// ```
   pub fn validate(&mut self) -> Result<(), String> {
     (&mut *self).reset_validation();
     let mut t = self.validation.clone();
@@ -120,6 +135,10 @@ impl Grammar {
     }
   }
 
+  /// Traverses the grammar rules from the starting non-terminal
+  /// to find the non-teminals that cannot be reached. Returns a
+  /// vector of non-terminals which cannot be reached. If all
+  /// non-terminals are reachable, returns a vector with length 0.
   pub fn get_unreachable_nonterminals(&mut self) -> Vec<String> {
     (&mut *self).reset_validation();
     let mut visited = self.validation.clone();
@@ -133,9 +152,9 @@ impl Grammar {
   }
 }
 
+/// Used for graph coloring during traversal required for validation methods.
 #[non_exhaustive]
 struct Status;
-
 impl Status {
   pub const UNVISITED: i32 = 0;
   pub const VISITING: i32 = 1;
@@ -191,6 +210,9 @@ fn dfs(
   }
 }
 
+/// Finds the non-terminals which are not reachable from the
+/// non-terminal which creates all sentences. Stores it's findings
+/// in the status hash map that is provided.
 fn find_reachable(
   node: &str,
   graph: &HashMap<String, Vec<String>>,
@@ -216,9 +238,14 @@ fn find_reachable(
   }
 }
 
+/// Used to find all components of an option. When a right-hand-side option has multiple
+/// components
+/// # Example
+/// ```
+/// let example = parse_subunits("<id> <noun>");
+/// assert_eq!(example, vec!["<id>", "<noun>"]);
+/// ```
 fn parse_subunits(option: &str) -> Vec<String> {
-  // let options = option.split_whitespace();
-  // let options = option.split_whitespace().collect::<Vec<&str>>();
   let possible_options: Vec<String> = option
     .split_whitespace()
     .map(|possible_option| String::from(possible_option.trim()))
@@ -270,7 +297,7 @@ mod tests {
     let mut grammar = Grammar::new();
     grammar.rule_add("1", "1 | 2");
     grammar.rule_add("2", "3");
-    let unsafe_keys = grammar.validate().unwrap();
+    grammar.validate().unwrap();
     let mut expected = HashMap::new();
     expected.insert(String::from("1"), 3);
     expected.insert(String::from("2"), 3);
@@ -282,11 +309,48 @@ mod tests {
     let mut grammar = Grammar::new();
     grammar.rule_add("1", "1 | 2");
     grammar.rule_add("2", "1 | 3");
-    let unsafe_keys = grammar.validate();
+    grammar.validate().unwrap();
     let mut expected = HashMap::new();
     expected.insert(String::from("1"), 3);
     expected.insert(String::from("2"), 3);
     // assert_eq!(unsafe_keys.len(), 0);
     assert_eq!(grammar.validation, expected);
+  }
+
+  #[test]
+  fn test_parse_subunits() {
+    let example = parse_subunits("<id> <noun>");
+    assert_eq!(example, vec!["<id>", "<noun>"]);
+  }
+
+  #[test]
+  fn test_find_reachable_1() {
+    let mut graph = HashMap::new();
+    let mut status = HashMap::new();
+    graph.insert("a".to_string(), vec!["a".to_string(), "b".to_string()]);
+    graph.insert("b".to_string(), vec!["c".to_string(), "d".to_string()]);
+    for (key, _) in &graph {
+      status.insert(key.to_string(), Status::UNVISITED);
+    }
+    find_reachable("a", &graph, &mut status);
+    let mut expected = HashMap::new();
+    expected.insert("a".to_string(), Status::SAFE);
+    expected.insert("b".to_string(), Status::SAFE);
+    assert_eq!(status, expected);
+  }
+  #[test]
+  fn test_find_reachable_2() {
+    let mut graph = HashMap::new();
+    let mut status = HashMap::new();
+    graph.insert("a".to_string(), vec!["d".to_string(), "e".to_string()]);
+    graph.insert("b".to_string(), vec!["c".to_string(), "d".to_string()]);
+    for (key, _) in &graph {
+      status.insert(key.to_string(), Status::UNVISITED);
+    }
+    find_reachable("a", &graph, &mut status);
+    let mut expected = HashMap::new();
+    expected.insert("a".to_string(), Status::SAFE);
+    expected.insert("b".to_string(), Status::UNVISITED);
+    assert_eq!(status, expected);
   }
 }
