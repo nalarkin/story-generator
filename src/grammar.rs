@@ -2,7 +2,8 @@ use crate::utils;
 use crate::*;
 use std::collections::HashMap;
 
-/// This struct is used to manage and store the grammar rules, while also and validate the
+/// This struct is used to manage and store the grammar rules. This is the main structure
+/// the client will interface with.
 #[derive(Debug)]
 pub struct Grammar {
   pub rules: HashMap<String, Vec<String>>,

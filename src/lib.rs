@@ -2,7 +2,7 @@ use std::error::Error;
 use std::fs;
 use std::process;
 
-// Special file to declare file structure
+// Declare modules to make them available within this crate.
 pub mod grammar;
 pub mod utils;
 
@@ -16,17 +16,20 @@ pub struct Config {
 }
 
 impl Config {
+  /// Given CLI arguments, parse and validate the arguments.
   pub fn new(args: &[String]) -> Result<Config, &str> {
     if args.len() < 3 {
       return Err("not enough arguments");
     }
 
     let filename = args[1].clone();
+    // Raise error if 3rd argument is not an integer.
     let quantity = match args[2].clone().parse::<i32>() {
       Ok(i) => i,
       Err(_e) => return Err("third argument was not an integer"),
     };
     let mut paragraph_length = 1;
+    // Raise error if 4th argument is not an integer
     if args.len() == 4 {
       paragraph_length = match args[3].clone().parse::<i32>() {
         Ok(i) => i,
