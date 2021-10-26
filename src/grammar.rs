@@ -28,7 +28,8 @@ impl Grammar {
       .iter()
       .map(|&x| String::from(x.trim()))
       .collect();
-    // update a key, guarding against the key possibly not being set
+    // get mutable access to value associated with key, guarding against the key
+    // possibly not being set
     let right_hand_side = self.rules.entry(key.to_string()).or_insert(vec![]);
     for option in parsed {
       right_hand_side.push(option);
@@ -39,6 +40,10 @@ impl Grammar {
     self.start_nonterminal = String::from(new_value);
   }
 
+  /// Add a rule struct into the existing grammar rules. If no matching LHS
+  /// currently matches, it will create a new grammar rule. If a matching LHS
+  /// already exists, it will extend the options of the existing respective RHS
+  /// to include the RHS of the provided rule.
   pub fn rule_add_from_file(&mut self, rule: Rule) {
     let key = self.rules.entry(rule.left_hand).or_insert(vec![]);
     key.extend(rule.right_hand);
@@ -69,7 +74,7 @@ impl Grammar {
     let unformatted_sentence = self.build_random(key);
     let mut trimmed_sentence = String::from(unformatted_sentence.trim());
     trimmed_sentence.push_str(".");
-    // capitalize first letter
+    // capitalize first letter in the sentence.
     let mut c = trimmed_sentence.chars();
     match c.next() {
       None => String::new(),
@@ -98,88 +103,15 @@ impl Grammar {
       .get_unreachable_nonterminals(&self.rules, &self.start_nonterminal)
   }
 
+  /// Validates the grammer rules have at least 1 valid path. See Validator
+  /// struct for more detailed info on validation procedure.
   pub fn validate(&mut self) -> Result<(), String> {
     self.validator.validate(&self.rules)
   }
-  // fn parse_selected_choice(&self, option: &str) -> Vec<String> {
-  //   let mut all_options = vec![];
-  //   let options = option.split_whitespace().collect::<Vec<&str>>();
-  //   for possible in options {
-  //     all_options.push(String::from(possible.trim()));
-  //   }
-  //   all_options
-  // }
-
-  // fn reset_validation(&mut self) {
-  //   // self.validation = Default::default();
-
-  //   // for key in self.rules.keys() {
-  //   //   self.validation.insert(String::from(key), Status::UNVISITED);
-  //   // }
-  //   self.validation = self
-  //     .rules
-  //     .keys()
-  //     .map(|key| (String::from(key), Status::UNVISITED))
-  //     .collect();
-  // }
-
-  // /// Validates the grammar rules to ensure there are no cycles that are
-  // /// gauranteed to go infinitely. Each non-terminal is valid if there is at
-  // /// least 1 valid path for the non-terminal, and each non-terminal.
-  // /// Note: Recursive rules and cycles are still allowed.
-  // /// # Examples
-  // /// ```
-  // /// // the below is valid
-  // /// // <noun> = <adj> | <noun>
-  // /// // <adj> = happy
-  // ///
-  // /// // the below is valid
-  // /// // <noun> = <adj> <noun> | <ending>
-  // /// // <adj> = <noun> | <adj>
-  // /// // <ending> = abc
-  // ///
-  // /// // the following is not valid
-  // /// // <noun> = <verb>
-  // /// // <verb> = <noun>
-  // /// ```
-  // pub fn validate(&mut self) -> Result<(), String> {
-  //   (&mut *self).reset_validation();
-  //   let mut t = self.validation.clone();
-  //   for key in (&self).rules.keys() {
-  //     match dfs(key, &self.rules, &mut t) {
-  //       true => t.insert(String::from(key), Status::SAFE),
-  //       false => t.insert(String::from(key), Status::UNSAFE),
-  //     };
-  //   }
-  //   self.validation = t;
-  //   let unsafe_keys = get_unsafe_keys(&self.validation);
-  //   match unsafe_keys.len() {
-  //     0 => Ok(()),
-  //     _ => {
-  //       let error_str = format!("unsafe non-terminals: {}", unsafe_keys.join(" "));
-  //       return Err(error_str);
-  //     }
-  //   }
-  // }
-
-  // /// Traverses the grammar rules from the starting non-terminal
-  // /// to find the non-teminals that cannot be reached. Returns a
-  // /// vector of non-terminals which cannot be reached. If all
-  // /// non-terminals are reachable, returns a vector with length 0.
-  // pub fn get_unreachable_nonterminals(&mut self) -> Vec<String> {
-  //   // (&mut *self).reset_validation();
-  //   self.reset_validation();
-  //   let mut visited = self.validation.clone();
-  //   find_reachable(&self.start_nonterminal, &self.rules, &mut visited);
-  //   let unreachable_keys: Vec<String> = visited
-  //     .iter()
-  //     .filter(|(_, val)| val != &&Status::SAFE)
-  //     .map(|(key, _)| String::from(key))
-  //     .collect();
-  //   unreachable_keys
-  // }
 }
 
+/// Executes all grammar validation logic and stores results in
+/// the HashMap 'validation' attribute.
 #[derive(Debug)]
 pub struct Validator {
   pub validation: HashMap<String, i32>,
@@ -222,6 +154,7 @@ impl Validator {
     }
     self.validation = validation_map;
     let unsafe_keys = get_unsafe_keys(&self.validation);
+    // if no unsafe keys, then validation is successful
     match unsafe_keys.len() {
       0 => Ok(()),
       _ => {
@@ -232,11 +165,6 @@ impl Validator {
   }
 
   fn reset_validation(&mut self, rules: &HashMap<String, Vec<String>>) -> HashMap<String, i32> {
-    // self.validation = Default::default();
-
-    // for key in self.rules.keys() {
-    //   self.validation.insert(String::from(key), Status::UNVISITED);
-    // }
     let validation = rules
       .keys()
       .map(|key| (String::from(key), Status::UNVISITED))
@@ -258,7 +186,7 @@ impl Validator {
     let unreachable_keys: Vec<String> = self
       .validation
       .iter()
-      .filter(|(_, val)| val != &&Status::SAFE)
+      .filter(|(_, &val)| val != Status::SAFE)
       .map(|(key, _)| String::from(key))
       .collect();
 
@@ -287,12 +215,12 @@ fn dfs(
     None => true,
     Some(&Status::SAFE) => true,
     Some(&Status::UNSAFE) => false,
-    Some(&Status::VISITING) => false,
+    Some(&Status::VISITING) => false, // occurs when there is a cycle
     Some(&Status::UNVISITED) => {
       status.insert(String::from(node), Status::VISITING);
       let mut is_safe = false;
-      if let Some(options) = graph.get(node) {
-        for option in options {
+      if let Some(right_hand_side_options) = graph.get(node) {
+        for option in right_hand_side_options {
           let parsed = parse_subunits(option);
           let valid_options: Vec<bool> = parsed
             .iter()
@@ -300,6 +228,7 @@ fn dfs(
             .collect();
           let is_valid_option = valid_options.iter().all(sub_option_is_safe);
           if is_valid_option {
+            // used to set the LHS as true if at least 1 of the options in the RHS is safe.
             is_safe = true;
           }
         }
@@ -314,7 +243,7 @@ fn dfs(
       }
       is_safe
     }
-    _ => false,
+    _ => false, // removes non_exhaustive erorr, but we know that value can only be 0-3
   }
 }
 
@@ -383,9 +312,6 @@ mod tests {
   #[test]
   fn test_validation_1() {
     let mut grammar = Grammar::new();
-    // grammar.rule_add("<sentence>", "<vp> | np");
-    // grammar.rule_add("<vp>", "noun");
-    // grammar.rule_add("noun", "<vp>");
 
     let rule_1 = Rule::new("<sentence> = <vp> | np").unwrap_or_default();
     let rule_2 = Rule::new("<vp> = noun").unwrap_or_default();
@@ -399,14 +325,8 @@ mod tests {
     expected.insert(String::from("<sentence>"), 3);
     expected.insert(String::from("<vp>"), 2);
     expected.insert(String::from("noun"), 2);
-    // assert!(unsafe_keys.contains(String::from("<vp>")));
-    // assert!(unsafe_keys.contains("<vp>".to_string()));
     assert!(unsafe_keys.contains("<vp>"));
     assert!(unsafe_keys.contains("noun"));
-    // assert!(unsafe_keys.iter().any(|e| e == "<vp>"));
-    // assert!(unsafe_keys.iter().any(|e| e == "noun"));
-    // assert_eq!(unsafe_keys.len(), 2);
-    // assert!(unsafe_keys.contains("<vp>"));
     assert_eq!(grammar.validator.validation, expected);
   }
   #[test]
@@ -418,7 +338,6 @@ mod tests {
     let mut expected = HashMap::new();
     expected.insert(String::from("1"), 3);
     expected.insert(String::from("2"), 3);
-    // assert_eq!(unsafe_keys.len(), 0);
     assert_eq!(grammar.validator.validation, expected);
   }
   #[test]
@@ -430,7 +349,6 @@ mod tests {
     let mut expected = HashMap::new();
     expected.insert(String::from("1"), 3);
     expected.insert(String::from("2"), 3);
-    // assert_eq!(unsafe_keys.len(), 0);
     assert_eq!(grammar.validator.validation, expected);
   }
 
