@@ -2,8 +2,8 @@
 CP = (C) TP | TP | TP
 // C is a complementizers
 C = that | if
-NP = (D) (AdjP) N (PP) (CP)
-TP = NP (T) VP | CP (T) VP
+NP = D (AdjP) N (PP) (CP)
+TP = CP (T) VP | NP (T) VP | NP (T) VP | NP (T) VP
 T = didn't
 D = the | a
 N = dog | cat | teacher | lizard  | store 

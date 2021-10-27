@@ -75,7 +75,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 }
 
 /// Converts generated sentences into paragraphs of given sentence length
-fn convert_sentences_to_paragraphs(slice: &[String], length: &i32) -> Vec<String> {
+pub fn convert_sentences_to_paragraphs(slice: &[String], length: &i32) -> Vec<String> {
   let mut paragraphs = vec![];
   let mut idx = 0;
   while idx < slice.len() {
@@ -93,7 +93,7 @@ fn convert_sentences_to_paragraphs(slice: &[String], length: &i32) -> Vec<String
 
 /// Convert lines from a file into grammar rules
 /// Program exits if any lines do not follow the rules listed in the README.md
-fn parse_file(lines: &[&str]) -> Vec<Rule> {
+pub fn parse_file(lines: &[&str]) -> Vec<Rule> {
   let mut rules = vec![];
   for (line_num, line) in lines.iter().enumerate() {
     if !should_ignore_line(line) {
@@ -141,7 +141,7 @@ impl Rule {
     let right_unparsed = String::from(parsed[1].trim());
     // let right_hand = parse_right_hand_side(&right_unparsed);
     let temp_right_hand = parse_right_hand_side(&right_unparsed);
-    let right_hand = process_rhs(&temp_right_hand);
+    let right_hand = process_rhs_optional_combinations(&temp_right_hand);
     // println!(
     //   "options before: {:?} options after: {:?}",
     //   right_hand, updated_options
@@ -152,11 +152,18 @@ impl Rule {
     })
   }
 }
-fn process_rhs(right_hand: &[String]) -> Vec<String> {
+
+/// Converts the RHS vector into representing all possible combinations of
+/// optional tokens. If there are no optional tokens, then this method
+/// will return the same array.
+///
+/// If there are optional tokens, then the number of options that will
+/// be generated is equal to 2^n, where n is the number of optional tokens.
+pub fn process_rhs_optional_combinations(right_hand: &[String]) -> Vec<String> {
   let mut options: Vec<String> = vec![];
   for op in right_hand {
     let sub_units = grammar::parse_subunits(op);
-    let mut perm = Permuations::new();
+    let mut perm = Combinations::new();
     for s in sub_units {
       let trimmed = s.trim();
       if trimmed.starts_with('(') && trimmed.ends_with(')') {
@@ -182,40 +189,38 @@ fn process_rhs(right_hand: &[String]) -> Vec<String> {
   // for
 }
 
+/// Used to encapsulate combinatorics logic for optional tokens.
 #[derive(Debug)]
-pub struct Permuations {
+pub struct Combinations {
   pub options: Vec<String>,
 }
-impl Permuations {
-  pub fn new() -> Permuations {
-    Permuations {
-      options: Default::default(),
+impl Combinations {
+  pub fn new() -> Combinations {
+    Combinations {
+      options: vec![String::from("")],
     }
   }
+  // For each optional token, options are increased by a factor of 2.
+  // For example, if there exists 4 options current, and an optional
+  // token is added, then 8 options will exist.
   pub fn add_optional(&mut self, optional: &str) {
-    if self.options.len() == 0 {
-      self.options.push(String::from(""));
-      self.options.push(String::from(optional));
-    } else {
-      let modified: Vec<String> = self
-        .options
-        .iter()
-        .map(|x| format!("{} {}", x, optional))
-        .collect();
-      self.options.extend(modified);
-    }
+    // for every optional token, it can either be added, or not added.
+    // The 'modified' vec represents the times it's added.
+    let modified: Vec<String> = self
+      .options
+      .iter()
+      .map(|x| format!("{} {}", x, optional))
+      .collect();
+    self.options.extend(modified); // vector length is doubled
   }
+  // add the required token to all existing options
   pub fn add_required(&mut self, required: &str) {
-    if self.options.len() == 0 {
-      self.options.push(String::from(required))
-    } else {
-      let modified: Vec<String> = self
-        .options
-        .iter()
-        .map(|x| format!("{} {}", x, required))
-        .collect();
-      self.options = modified;
-    }
+    let modified: Vec<String> = self
+      .options
+      .iter()
+      .map(|x| format!("{} {}", x, required))
+      .collect();
+    self.options = modified;
   }
 }
 

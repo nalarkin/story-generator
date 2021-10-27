@@ -1,9 +1,7 @@
 use crate::utils;
 use crate::*;
 use std::collections::HashMap;
-// use regex::Regex;
 
-// let re = Regex::new(r"")
 /// This struct is used to manage and store the grammar rules. This is the main structure
 /// the client will interface with.
 #[derive(Debug)]
@@ -52,7 +50,6 @@ impl Grammar {
   //   key.extend(rule.right_hand);
   // }
   pub fn rule_add_from_file(&mut self, rule: Rule) {
-    // println!("split optional? {:?}")
     let key = self.rules.entry(rule.left_hand).or_insert(vec![]);
     key.extend(rule.right_hand);
   }
@@ -104,7 +101,7 @@ impl Grammar {
       format!(" {}", key)
     }
   }
-
+  /// Interface function to get LHS tokens which are not reachable.
   pub fn get_unreachable_nonterminals(&mut self) -> Vec<String> {
     self
       .validator
@@ -135,22 +132,21 @@ impl Validator {
   /// Validates the grammar rules to ensure there are no cycles that are
   /// gauranteed to go infinitely. Each non-terminal is valid if there is at
   /// least 1 valid path for the non-terminal, and each non-terminal.
+  ///
   /// Note: Recursive rules and cycles are still allowed.
-  /// # Examples
-  /// ```
-  /// // the below is valid
-  /// // <noun> = <adj> | <noun>
-  /// // <adj> = happy
   ///
-  /// // the below is valid
-  /// // <noun> = <adj> <noun> | <ending>
-  /// // <adj> = <noun> | <adj>
-  /// // <ending> = abc
+  /// #### Valid Example
+  /// `<noun> = <adj> | <noun>`
+  /// `<adj> = happy`
   ///
-  /// // the following is not valid
-  /// // <noun> = <verb>
-  /// // <verb> = <noun>
-  /// ```
+  /// #### Valid Example
+  /// `<noun> = <adj> <noun> | <ending>`
+  /// `<adj> = <noun> | <adj>`
+  /// `<ending> = abc`
+  ///
+  /// #### Invalid Example
+  /// `<noun> = <verb>`
+  /// `<verb> = <noun>`
   pub fn validate(&mut self, rules: &HashMap<String, Vec<String>>) -> Result<(), String> {
     // self.reset_validation(rules);
     let mut validation_map = self.reset_validation(rules);
@@ -204,7 +200,7 @@ impl Validator {
 
 /// Used for graph coloring during traversal required for validation methods.
 #[non_exhaustive]
-struct Status;
+pub struct Status;
 impl Status {
   pub const UNVISITED: i32 = 0;
   pub const VISITING: i32 = 1;
@@ -214,7 +210,7 @@ impl Status {
 
 /// Recursive depth first search which marks nodes (non-terminal) as safe
 /// it all sub options are safe. Otherwise, mark the node as unvisited.
-fn dfs(
+pub fn dfs(
   node: &str,
   graph: &HashMap<String, Vec<String>>,
   status: &mut HashMap<String, i32>,
@@ -303,10 +299,12 @@ fn sub_option_is_safe(sub_option: &bool) -> bool {
   sub_option == &true
 }
 
+/// Find the nodes that have a value equal to Status::UNSAFE. If there are
+/// no nodes with this value, then return an empty Vector.
 fn get_unsafe_keys(status: &HashMap<String, i32>) -> Vec<String> {
   let unsafe_keys: Vec<String> = status
     .iter()
-    .filter(|(_, value)| value == &&Status::UNSAFE)
+    .filter(|(_, &value)| value == Status::UNSAFE)
     .map(|(key, _)| key.to_string())
     .collect();
   unsafe_keys
