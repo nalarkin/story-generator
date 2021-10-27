@@ -1,3 +1,6 @@
+//! Main module that collects the command line arguments and
+//! intiates the application.
+
 use std::env;
 use std::process;
 use story_graph::Config;

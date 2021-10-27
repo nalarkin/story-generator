@@ -27,9 +27,10 @@ note: `<sentences per paragraph>` is optional, defaults to 1.
 1. Grammar rules must be stored in a `.txt` file
 2. Grammar rules must be in BNF notation.
    1. For more info see: https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form
-3. First line in file will be the rule that all sentences are derived from
-4. You don't need to include angled brackets for non-terminals, I simply did so for clarity.
-5. Each nonterminal must have at least 1 path that leads to a terminal node
+3. You may surround a token in parenthesis if it is optional. 
+4. First non-ignored line in file will be the rule that all sentences are derived from
+5. You don't need to include angled brackets for non-terminals, I simply did so for clarity.
+6. Each nonterminal must have at least 1 path that leads to a terminal node
    1. For example, the two rules `<sentence> = <noun>` and `<noun> = <sentence>` would not be valid, but the following combination would be valid: `<sentence> = <noun>` and `<noun> = <sentence> | cat` where cat is a terminal.
 
 ### Simple Grammar Example
@@ -52,6 +53,10 @@ Concepts used to develop this project.
   - used to test validity of grammar rules before generation starts.
     - Detects if there is at least 1 valid path from each option that is reachable from the starting nonterminal
     - TODO: Detect that each nonterminal is reachable (test by doing single traversal from the starting nonterminal, and traversing over to see which nodes were visited)
+
+### Command for generating documentation
+
+`cargo doc --no-deps --target-dir ./docs `
 
 ### Recently Added Optional Values, which make complex generation a lot easier to create
 

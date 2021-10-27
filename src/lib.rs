@@ -1,10 +1,41 @@
+//! This module contains most of the business logic required to run the
+//! application and for error handling.
+
 use std::error::Error;
 use std::fs;
 use std::process;
 
 // Declare modules to make them available within this crate.
 pub mod grammar;
-pub mod utils;
+pub mod random;
+
+/// Main function which runs and controls the life time of the application.
+pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
+  let contents = fs::read_to_string(config.filename)?;
+  let lines = &contents.split("\n").collect::<Vec<&str>>();
+  let parsed_rules = parse_file(&lines);
+  if parsed_rules.len() == 0 {
+    panic!("unable to parse file or file is empty");
+  }
+  let mut grammar = grammar::Grammar::new();
+  grammar.change_start_nonterminal(&parsed_rules[0].left_hand);
+  for rule in parsed_rules {
+    grammar.rule_add_from_file(rule);
+  }
+  let unreachable = grammar.get_unreachable_nonterminals();
+  match unreachable.len() {
+    0 => eprintln!("Successful grammar rules. No unreachable non-terminals."),
+    _ => eprintln!("Warning: Unreachable non-terminals: {:#?}", unreachable),
+  }
+  println!("{:#?}", grammar.rules);
+  let generated_sentences = grammar.generate_sentences(&grammar.start_nonterminal, config.quantity);
+  let generated_paragraphs =
+    convert_sentences_to_paragraphs(&generated_sentences, &config.paragraph_length);
+  for paragraph in generated_paragraphs {
+    println!("{}", paragraph);
+  }
+  Ok(())
+}
 
 /// Validates the command line arguments, and stores their values.
 #[derive(Debug)]
@@ -44,34 +75,6 @@ impl Config {
       paragraph_length,
     })
   }
-}
-
-/// Main function which runs and controls the life time of the application.
-pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
-  let contents = fs::read_to_string(config.filename)?;
-  let lines = &contents.split("\n").collect::<Vec<&str>>();
-  let parsed_rules = parse_file(&lines);
-  if parsed_rules.len() == 0 {
-    panic!("unable to parse file or file is empty");
-  }
-  let mut grammar = grammar::Grammar::new();
-  grammar.change_start_nonterminal(&parsed_rules[0].left_hand);
-  for rule in parsed_rules {
-    grammar.rule_add_from_file(rule);
-  }
-  let unreachable = grammar.get_unreachable_nonterminals();
-  match unreachable.len() {
-    0 => eprintln!("Successful grammar rules. No unreachable non-terminals."),
-    _ => eprintln!("Warning: Unreachable non-terminals: {:#?}", unreachable),
-  }
-  println!("{:#?}", grammar.rules);
-  let generated_sentences = grammar.generate_sentences(&grammar.start_nonterminal, config.quantity);
-  let generated_paragraphs =
-    convert_sentences_to_paragraphs(&generated_sentences, &config.paragraph_length);
-  for paragraph in generated_paragraphs {
-    println!("{}", paragraph);
-  }
-  Ok(())
 }
 
 /// Converts generated sentences into paragraphs of given sentence length
@@ -132,6 +135,9 @@ pub struct Rule {
   pub right_hand: Vec<String>,
 }
 impl Rule {
+  /// Takes a line of the file following a specific notation,
+  /// and parses the line, and applies the necessary transformations
+  /// to convert it into a rule.
   pub fn new(line: &str) -> Result<Rule, &str> {
     let parsed = line.split("=").collect::<Vec<&str>>();
     if parsed.len() < 2 {
@@ -139,13 +145,8 @@ impl Rule {
     }
     let left_hand = String::from(parsed[0].trim());
     let right_unparsed = String::from(parsed[1].trim());
-    // let right_hand = parse_right_hand_side(&right_unparsed);
     let temp_right_hand = parse_right_hand_side(&right_unparsed);
     let right_hand = process_rhs_optional_combinations(&temp_right_hand);
-    // println!(
-    //   "options before: {:?} options after: {:?}",
-    //   right_hand, updated_options
-    // );
     Ok(Rule {
       left_hand,
       right_hand,
@@ -175,7 +176,6 @@ pub fn process_rhs_optional_combinations(right_hand: &[String]) -> Vec<String> {
         perm.add_required(trimmed);
       }
     }
-    // println!("rhs: {:?} rules: {:#?}", right_hand, perm);
     options.extend(
       perm
         .options
@@ -183,10 +183,8 @@ pub fn process_rhs_optional_combinations(right_hand: &[String]) -> Vec<String> {
         .map(|x| String::from(x.trim()))
         .collect::<Vec<String>>(),
     );
-    // println!("rhs: {:?} rules: {:#?}", right_hand, perm);
   }
   options
-  // for
 }
 
 /// Used to encapsulate combinatorics logic for optional tokens.
@@ -200,9 +198,10 @@ impl Combinations {
       options: vec![String::from("")],
     }
   }
-  // For each optional token, options are increased by a factor of 2.
-  // For example, if there exists 4 options current, and an optional
-  // token is added, then 8 options will exist.
+  /// Add an optional token to the existing options. Each call on this method
+  /// increases the number of options on the RHS by a factor of 2.
+  /// For example, if there are currently 4 options, and an optional
+  /// token is added, then after this method is complete, 8 options will exist.
   pub fn add_optional(&mut self, optional: &str) {
     // for every optional token, it can either be added, or not added.
     // The 'modified' vec represents the times it's added.
@@ -213,7 +212,8 @@ impl Combinations {
       .collect();
     self.options.extend(modified); // vector length is doubled
   }
-  // add the required token to all existing options
+  /// Add a required token to all existing options. Every option must
+  /// include this token.
   pub fn add_required(&mut self, required: &str) {
     let modified: Vec<String> = self
       .options

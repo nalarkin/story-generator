@@ -1,9 +1,12 @@
-use crate::utils;
+//! This module contains all the grammar rule storage and generating
+//! random sentences.
+//! intiates the application.
+use crate::random;
 use crate::*;
 use std::collections::HashMap;
 
-/// This struct is used to manage and store the grammar rules. This is the main structure
-/// the client will interface with.
+/// This struct is used to manage and store the grammar rules.
+/// This is the main structure the client will interface with.
 #[derive(Debug)]
 pub struct Grammar {
   pub rules: HashMap<String, Vec<String>>,
@@ -90,7 +93,7 @@ impl Grammar {
   /// that string, otherwise evaulate RHS
   pub fn build_random(&self, key: &str) -> String {
     if let Some(options) = self.rules.get(key) {
-      let random_choice = utils::get_random_from_vector(options);
+      let random_choice = random::get_random_from_vector(options);
       let sub_choices = parse_subunits(&random_choice);
       let mut built_sentence = String::new();
       for token in sub_choices {
@@ -264,11 +267,9 @@ fn find_reachable(
     Some(&Status::UNVISITED) => {
       status.insert(String::from(node), Status::SAFE);
       if let Some(options) = graph.get(node) {
-        // println!("node:{}, all options: {:#?}", node, options);
         for option in options {
           let parsed = parse_subunits(option);
           for sub_option in parsed {
-            // println!("node {} calling dfs on neighbor {}", node, sub_option);
             find_reachable(&sub_option, graph, status);
           }
         }
