@@ -1,0 +1,8 @@
+//<NP> = (AUX) N (Verb)
+//NP = AUX N Verb
+NP = (D) (AdjP+) N (PP+) (CP)
+
+//AUX = the
+//N = T | dog
+//T = a
+//Verb = barks

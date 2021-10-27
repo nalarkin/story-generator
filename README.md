@@ -53,6 +53,33 @@ Concepts used to develop this project.
     - Detects if there is at least 1 valid path from each option that is reachable from the starting nonterminal
     - TODO: Detect that each nonterminal is reachable (test by doing single traversal from the starting nonterminal, and traversing over to see which nodes were visited)
 
+### Recently Added Optional Values, which make complex generation a lot easier to create
+
+#### Example
+
+NP = (D) (AdjP+) N (PP+) (CP)  // this rule is processed and the program generates the following permutations
+
+"NP": [
+        "N",
+        "D N",
+        "AdjP+ N",
+        "D AdjP+ N",
+        "N PP+",
+        "D N PP+",
+        "AdjP+ N PP+",
+        "D AdjP+ N PP+",
+        "N CP",
+        "D N CP",
+        "AdjP+ N CP",
+        "D AdjP+ N CP",
+        "N PP+ CP",
+        "D N PP+ CP",
+        "AdjP+ N PP+ CP",
+        "D AdjP+ N PP+ CP",
+    ],``` 
+
+
+
 FAQ
 
 - Aren't these grammar rules more like trees than graphs?

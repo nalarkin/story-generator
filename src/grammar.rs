@@ -1,7 +1,9 @@
 use crate::utils;
 use crate::*;
 use std::collections::HashMap;
+// use regex::Regex;
 
+// let re = Regex::new(r"")
 /// This struct is used to manage and store the grammar rules. This is the main structure
 /// the client will interface with.
 #[derive(Debug)]
@@ -45,7 +47,12 @@ impl Grammar {
   /// currently matches, it will create a new grammar rule. If a matching LHS
   /// already exists, it will extend the options of the existing respective RHS
   /// to include the RHS of the provided rule.
+  // pub fn rule_add_from_file(&mut self, rule: Rule) {
+  //   let key = self.rules.entry(rule.left_hand).or_insert(vec![]);
+  //   key.extend(rule.right_hand);
+  // }
   pub fn rule_add_from_file(&mut self, rule: Rule) {
+    // println!("split optional? {:?}")
     let key = self.rules.entry(rule.left_hand).or_insert(vec![]);
     key.extend(rule.right_hand);
   }

@@ -64,7 +64,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     0 => eprintln!("Successful grammar rules. No unreachable non-terminals."),
     _ => eprintln!("Warning: Unreachable non-terminals: {:#?}", unreachable),
   }
-
+  println!("{:#?}", grammar.rules);
   let generated_sentences = grammar.generate_sentences(&grammar.start_nonterminal, config.quantity);
   let generated_paragraphs =
     convert_sentences_to_paragraphs(&generated_sentences, &config.paragraph_length);
@@ -95,10 +95,11 @@ fn convert_sentences_to_paragraphs(slice: &[String], length: &i32) -> Vec<String
 /// Program exits if any lines do not follow the rules listed in the README.md
 fn parse_file(lines: &[&str]) -> Vec<Rule> {
   let mut rules = vec![];
-  for line in lines.iter() {
+  for (line_num, line) in lines.iter().enumerate() {
     if !should_ignore_line(line) {
       let built_rule = Rule::new(&line).unwrap_or_else(|err| {
-        eprintln!("Problem parsing arguments: {}", err);
+        eprintln!("Problem parsing line {}: {}", line_num as i32, err);
+        eprintln!("line's content is: '{}'", line);
         process::exit(1);
       });
       rules.push(built_rule);
@@ -108,7 +109,7 @@ fn parse_file(lines: &[&str]) -> Vec<Rule> {
 }
 
 fn should_ignore_line(line: &&str) -> bool {
-  line.trim().starts_with("//")
+  line.trim().is_empty() || line.trim().starts_with("//")
 }
 
 /// Represents a grammar rule formed from a single line in the file provided.
@@ -138,11 +139,83 @@ impl Rule {
     }
     let left_hand = String::from(parsed[0].trim());
     let right_unparsed = String::from(parsed[1].trim());
-    let right_hand = parse_right_hand_side(&right_unparsed);
+    // let right_hand = parse_right_hand_side(&right_unparsed);
+    let temp_right_hand = parse_right_hand_side(&right_unparsed);
+    let right_hand = process_rhs(&temp_right_hand);
+    // println!(
+    //   "options before: {:?} options after: {:?}",
+    //   right_hand, updated_options
+    // );
     Ok(Rule {
       left_hand,
       right_hand,
     })
+  }
+}
+fn process_rhs(right_hand: &[String]) -> Vec<String> {
+  let mut options: Vec<String> = vec![];
+  for op in right_hand {
+    let sub_units = grammar::parse_subunits(op);
+    let mut perm = Permuations::new();
+    for s in sub_units {
+      let trimmed = s.trim();
+      if trimmed.starts_with('(') && trimmed.ends_with(')') {
+        let mut without_paren = trimmed.chars();
+        without_paren.next(); // remove opening parenth
+        without_paren.next_back(); // remove closing parenth
+        perm.add_optional(without_paren.as_str());
+      } else {
+        perm.add_required(trimmed);
+      }
+    }
+    // println!("rhs: {:?} rules: {:#?}", right_hand, perm);
+    options.extend(
+      perm
+        .options
+        .iter()
+        .map(|x| String::from(x.trim()))
+        .collect::<Vec<String>>(),
+    );
+    // println!("rhs: {:?} rules: {:#?}", right_hand, perm);
+  }
+  options
+  // for
+}
+
+#[derive(Debug)]
+pub struct Permuations {
+  pub options: Vec<String>,
+}
+impl Permuations {
+  pub fn new() -> Permuations {
+    Permuations {
+      options: Default::default(),
+    }
+  }
+  pub fn add_optional(&mut self, optional: &str) {
+    if self.options.len() == 0 {
+      self.options.push(String::from(""));
+      self.options.push(String::from(optional));
+    } else {
+      let modified: Vec<String> = self
+        .options
+        .iter()
+        .map(|x| format!("{} {}", x, optional))
+        .collect();
+      self.options.extend(modified);
+    }
+  }
+  pub fn add_required(&mut self, required: &str) {
+    if self.options.len() == 0 {
+      self.options.push(String::from(required))
+    } else {
+      let modified: Vec<String> = self
+        .options
+        .iter()
+        .map(|x| format!("{} {}", x, required))
+        .collect();
+      self.options = modified;
+    }
   }
 }
 
