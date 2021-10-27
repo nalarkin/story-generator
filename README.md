@@ -1,37 +1,44 @@
 # Story Generator
 
-## A application generates a story based of provided grammar rules and is built in Rust.
+A application generates a story based of provided grammar rules and is built in Rust.
 
-### Requirements
+## Documentation: 
 
-- Use cargo to run the program or you can run the precompiled binary (storygen.exe)
+* https://nalarkin.github.io/story-generator/docs/doc/story_graph/
 
-### How to run example
+## Requirements
 
-Navigate the same directory as the `README.md` file and enter the command `cargo run examples/simple.txt 20`
+- To run this program, you may use the built-in rust package manage `cargo` or you can use the precompiled binary (storygen.exe)
 
-### CLI command is
+## Quick Start to Use the Generator
+
+1. Navigate the same directory as the `README.md` file 
+2. If using `cargo run`
+   1. `cargo run examples/simple.txt 40 5`
+3. If using `storygen.exe`
+   1. `./bin/storygen.exe examples/simple.txt 40 5`
+
+## CLI command is
+
+1. If using cargo
+   1. `cargo run <relative/path/to/file.txt> <number of sentences> <number of sentences per paragraph>`
+2. If using storygen.exe
+   1. `./storygen.exe <relative/path/to/file.txt> <number of sentences> <number of sentences per paragraph>`
 
 note: `<sentences per paragraph>` is optional, defaults to 1.
 
-#### If using cargo
-
-`cargo run <relative/path/to/file.txt> <number of sentences> <sentences per paragraph>`
-
-#### If using storygen.exe
-
-`./storygen.exe <relative/path/to/file.txt> <number of sentences> <sentences per paragraph>`
-
-### Rules for custom grammar:
+## Rules for Custom Grammar:
 
 1. Grammar rules must be stored in a `.txt` file
-2. Grammar rules must be in BNF notation.
+2. First non-ignored line in file will be the rule that all sentences are derived from
+3. Follows similar rules to BNF notation.
    1. For more info see: https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form
-3. You may surround a token in parenthesis if it is optional. 
-4. First non-ignored line in file will be the rule that all sentences are derived from
-5. You don't need to include angled brackets for non-terminals, I simply did so for clarity.
-6. Each nonterminal must have at least 1 path that leads to a terminal node
+4. Optional tokens can be surrounded with parenthesis.  
+5. Delimit multiple RHS options with `|`.
+6. Delimit LHS and RHS with `=`.
+7. Each nonterminal must have at least 1 path that leads to a terminal node
    1. For example, the two rules `<sentence> = <noun>` and `<noun> = <sentence>` would not be valid, but the following combination would be valid: `<sentence> = <noun>` and `<noun> = <sentence> | cat` where cat is a terminal.
+8. You don't need to include angled brackets for non-terminals, I simply did so for clarity.
 
 ### Simple Grammar Example
 
@@ -45,25 +52,16 @@ note: `<sentences per paragraph>` is optional, defaults to 1.
 <verb> = hugged | bit | bird```
 ````
 
-Concepts used to develop this project.
 
-- BNF grammar notation
-  - used to create the grammar
-- Graph traversal and coloring
-  - used to test validity of grammar rules before generation starts.
-    - Detects if there is at least 1 valid path from each option that is reachable from the starting nonterminal
-    - TODO: Detect that each nonterminal is reachable (test by doing single traversal from the starting nonterminal, and traversing over to see which nodes were visited)
 
-### Command for generating documentation
+### Advanced Grammar Rules
 
-`cargo doc --no-deps --target-dir ./docs `
-
-### Recently Added Optional Values, which make complex generation a lot easier to create
+This program allows optional values to be surrounded with parenthesis. When a rule contains an optional token, the program will calculate all possible paths (combinations) that are possible. For example, `noun = (adj) n` would create the options `noun = n | adj n`
 
 #### Example
 
-NP = (D) (AdjP+) N (PP+) (CP)  // this rule is processed and the program generates the following permutations
-
+```
+NP = (D) (AdjP+) N (PP+) (CP)  // this rule is processed and the program generates the following combinations
 "NP": [
         "N",
         "D N",
@@ -81,17 +79,38 @@ NP = (D) (AdjP+) N (PP+) (CP)  // this rule is processed and the program generat
         "D N PP+ CP",
         "AdjP+ N PP+ CP",
         "D AdjP+ N PP+ CP",
-    ],``` 
+    ]
+```
 
 
 
-FAQ
+## Major Concepts used to develop this project.
+
+- BNF grammar notation
+  - Used to create the grammar parse trees.
+- Graph traversal and coloring
+  - used to test validity of grammar rules before generation starts.
+  - Detects if there is at least 1 valid path from each option that is reachable from the starting nonterminal. 
+    - Program prints error message and exits if there are any non-valid rules.
+  - Detects which LHS tokens are unreachable from the initial starting LHS. 
+    - Gives a warning, listing the unreachable LHS tokens. 
+
+## FAQ
 
 - Aren't these grammar rules more like trees than graphs?
-  - **<u>Trees are graphs which have the minimum number of edges connecting all nodes. Thus, for n nodes, there will always be n-1 edges</u>**. These grammars can contain cycles and still be valid, thus, they are more similar to graphs than trees.
-  -
+  - Trees are graphs which have the minimum number of edges connecting all nodes. Thus, for n nodes, there will always be n-1 edges. These grammars can contain cycles and still be valid, thus, they are more similar to graphs than trees.
+- How did you create the documentation?
+  - Rust has built in documentation features that create static HTML code. 
+  - The command I used was `cargo doc --no-deps --target-dir ./docs `.
+- How did you create the executable file?
+  - Rust has a built in binary compilation feature. 
+  - The command I used was `cargo build; cp target/debug/story_graph.exe ./bin/storygen.exe`
+- Where is the executable file located?
+  - `project-root/bin/storygen.exe`
 
-to develop more complex grammar, you might find the following links helpful
+## Other resources
 
-- Grammar rules source: https://grammar.reverso.net/
-- Grammar conjugation source: https://conjugator.reverso.net/conjugation-english-verb-work.html
+* To develop more complex grammar, you might find the following links helpful
+  * Grammar rules source: https://grammar.reverso.net/
+  * Grammar conjugation source: https://conjugator.reverso.net/conjugation-english-verb-work.html
+

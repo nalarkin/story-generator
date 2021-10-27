@@ -23,11 +23,14 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     grammar.rule_add_from_file(rule);
   }
   let unreachable = grammar.get_unreachable_nonterminals();
+  // Use eprintln! so message does not get outputed to file if
+  // client redirects stdout to file.
   match unreachable.len() {
     0 => eprintln!("Successful grammar rules. No unreachable non-terminals."),
     _ => eprintln!("Warning: Unreachable non-terminals: {:#?}", unreachable),
   }
-  println!("{:#?}", grammar.rules);
+  // println!("{:#?}", grammar.rules);
+  eprintln!("Generating {} sentences.", config.quantity);
   let generated_sentences = grammar.generate_sentences(&grammar.start_nonterminal, config.quantity);
   let generated_paragraphs =
     convert_sentences_to_paragraphs(&generated_sentences, &config.paragraph_length);

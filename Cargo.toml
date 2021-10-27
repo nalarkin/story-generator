@@ -3,6 +3,12 @@ name = "story_graph"
 version = "0.1.0"
 edition = "2018"
 
+[alias]     # command aliases
+b = "build"
+c = "check"
+t = "test"
+r = "run"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build]
