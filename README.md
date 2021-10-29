@@ -56,10 +56,11 @@ note: `<sentences per paragraph>` is optional, defaults to 1.
 
 ### Advanced Grammar Rules
 
-This program allows optional values to be surrounded with parenthesis. When a rule contains an optional token, the program will calculate all possible paths (combinations) that are possible. For example, `noun = (adj) n` would create the options `noun = n | adj n`
+This program allows optional values to be surrounded with parenthesis. When a rule contains an optional token, the program will calculate all possible paths (combinations) that are possible. For example, `noun = (adj) n` would create the rule `noun = n | adj n`
 
 ```
-NP = (D) (AdjP+) N (PP+) (CP)  // this rule generates the following combinations (or paths that could be taken from NP)
+// this rule generates the following combinations (or paths that could be taken from NP)
+NP = (D) (AdjP+) N (PP+) (CP)  
 "NP": [
         "N",
         "D N",
