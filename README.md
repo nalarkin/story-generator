@@ -1,8 +1,8 @@
 # Story Generator
 
-A application that generates random sentences based of provided grammar rules. Built in Rust.
+A application that generates random sentences based off provided grammar rules. Built in Rust.
 
-## Documentation:
+## Source Code Documentation:
 
 - https://nalarkin.github.io/story-generator/
 
@@ -13,18 +13,16 @@ A application that generates random sentences based of provided grammar rules. B
 ## Quick Start to Use the Generator
 
 1. Clone the git repository or download repository as a zip file.
-2. Navigate the same directory as the `README.md` file
-3. If using `cargo run`
-   1. `cargo run examples/simple.txt 40 5`
-4. If using `story_gen.exe`
-   1. `./bin/story_gen.exe examples/simple.txt 40 5`
+2. Navigate the same directory as the `README.md` file in your terminal
+3. If using `cargo run` enter into the terminal `cargo run examples/simple.txt 40 5`
+4. If using `story_gen.exe` enter into the terminal `./bin/story_gen.exe examples/simple.txt 40 5`
 
 ## CLI command is
 
 1. If using cargo
-   1. `cargo run <relative/path/to/file.txt> <number of sentences> <number of sentences per paragraph>`
+   1. `cargo run <relative/path/to/grammar.txt> <number of sentences> <number of sentences per paragraph>`
 2. If using story_gen.exe
-   1. `./story_gen.exe <relative/path/to/file.txt> <number of sentences> <number of sentences per paragraph>`
+   1. `./story_gen.exe <relative/path/to/grammar.txt> <number of sentences> <number of sentences per paragraph>`
 3. You can use standard file redirection with the output produced from the stories. For example, the command `./bin/story_gen.exe examples/simple.txt 40 5 > output.txt` would store the output in a file named output.txt (or overwrite the file if it already exists).
 
 note: `<sentences per paragraph>` is optional, defaults to 1.
@@ -53,7 +51,7 @@ note: `<sentences per paragraph>` is optional, defaults to 1.
 <adj> = happy | angry | sad | tired
 <noun> = dog | cat | wolf | bird
 <vp> = <verb> <T> <noun> | <verb> <T> <adj> <noun> | <verb> <adj> <pro>
-<verb> = hugged | bit | bird```
+<verb> = hugged | bit | bird
 ````
 
 ### Advanced Grammar Rules
@@ -97,7 +95,7 @@ NP = (D) (AdjP+) N (PP+) (CP)  // this rule generates the following combinations
 
 ### Aren't these grammar rules more like trees than graphs?
 
-Trees are graphs which have the minimum number of edges connecting all nodes. Thus, for n nodes, there will always be n-1 edges. These grammars can contain cycles and still be valid, thus, they are more similar to graphs than trees.
+Trees are defined as graphs which have the minimum number of edges connecting all nodes. Thus, for n connected nodes, there must be n-1 edges for graph to be considered a tree. This application allows grammar rules to have cycles and still be valid, thus, the way the parse "tree" is implemented in this application is a graph. 
 
 ### How did you create the documentation?
 
@@ -113,7 +111,7 @@ The command I used was `cargo build; cp target/debug/story_gen.exe ./bin/story_g
 
 ### Where is the executable file located?
 
-`project-root/bin/story_gen.exe`
+[It is located here](./bin/)
 
 ### Why did you create this project?
 
