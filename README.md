@@ -96,7 +96,7 @@ NP = (D) (AdjP+) N (PP+) (CP)
 
 ### Aren't these grammar rules more like trees than graphs?
 
-Trees are defined as graphs which have the minimum number of edges connecting all nodes. Thus, for n connected nodes, there must be n-1 edges for graph to be considered a tree. This application allows grammar rules to have cycles and still be valid, thus, the way the parse "tree" is implemented in this application is a graph. 
+Trees are defined as graphs which have the minimum number of edges connecting all nodes. Thus, for n connected nodes, there must be n-1 edges for graph to be considered a tree. Additionally, for a graph to be a tree there can only be 1 path between any two nodes, but this application allows grammar rules to have cycles and still be valid. You could view this as a graph implementation of a parse tree. 
 
 ### How did you create the documentation?
 
