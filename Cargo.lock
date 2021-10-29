@@ -72,7 +72,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "story_graph"
+name = "story_gen"
 version = "0.1.0"
 dependencies = [
  "rand",

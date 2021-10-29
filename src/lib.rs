@@ -26,7 +26,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
   // Use eprintln! so message does not get outputed to file if
   // client redirects stdout to file.
   match unreachable.len() {
-    0 => eprintln!("Successful grammar rules. No unreachable non-terminals."),
+    0 => eprintln!("Successful grammar rules. All non-terminals are reachable."),
     _ => eprintln!("Warning: Unreachable non-terminals: {:#?}", unreachable),
   }
   // println!("{:#?}", grammar.rules);
@@ -121,7 +121,7 @@ fn should_ignore_line(line: &&str) -> bool {
 /// Represents a grammar rule formed from a single line in the file provided.
 /// # Example
 /// ```
-/// use story_graph::Rule;
+/// use story_gen::Rule;
 ///
 /// let example = Rule::new("noun = cat | dog").unwrap_or(Rule::default());
 /// assert_eq!(example.left_hand, "noun");
@@ -230,7 +230,7 @@ impl Combinations {
 /// Parses the string that that is to the rigth of the equal sign delimiter
 /// # Examples:
 /// ```
-/// use story_graph::parse_right_hand_side;
+/// use story_gen::parse_right_hand_side;
 /// assert_eq!(parse_right_hand_side("bag | dog"), vec!["bag", "dog"]);
 /// assert_eq!(parse_right_hand_side("bag | dog cat"),vec!["bag", "dog cat"]);
 /// ```

@@ -1,8 +1,18 @@
+// simple grammar that is more complex than the provided basic grammar
 <sentence> = <np> <vp>
-<np> = <pro> | <T> <noun> | <T> <adj> <noun>
-<pro> = Mike | Sarah | Will
-<T> = the | a
-<adj> = happy | angry | sad | tired
-<noun> = dog | cat | wolf | bird
-<vp> = <verb> <T> <noun> | <verb> <T> <adj> <noun> | <verb> <adj> <pro>
-<verb> = hugged | bit | saw
+<np> = <pro> |  <noun-count>
+<noun-no-count> = (the) <n-no-count>
+<n-no-count> = <foods> | <non-food-no-count> 
+<foods> = bacon | beef | bread | broccoli | butter | cabbage | candy | cauliflower | celery | cereal | cheese | chicken | chocolate | coffee | corn | cream | fish | flour | fruit | ice cream | lettuce | meat | milk | oil | pasta | rice | salt | spinach | sugar | tea | water | wine | yogurt
+<non-food-no-count> = air | cement | coal | dirt | gasoline | gold | paper | petroleum | plastic | rain | silver | snow | soap | steel | wood | wool
+<noun-count> = <unknown-noun> | <known-noun>
+<unknown-noun> = a <a-noun> | an <an-noun> | a <adj> <a-noun> | a <adj> <an-noun> | an <an-adj> <a-noun> | an <an-adj> <an-noun>
+<a-noun> = dog | cat | bird | rabbit | snake | lizard | puppy | student | mother | father | person | teacher
+<an-noun> = apple | owl | antelope | elephant | ant
+<known-noun> = the <identity-noun>
+<identity-noun> = <a-noun> | <an-noun>
+<pro> = Mike | Sarah | Will | Jacob | Rachel
+<adj> = happy | sad | tired | hopeful | weary | clumsy | confused | calm | friendly | famous | funny | hungry | joyous | lazy | motionless | proud | nervous
+<an-adj> = angry | awesome | energetic | old | intoxicated | ashamed | adorable | aggressive | evil | unusual | obedient
+<vp> = <verb> <noun-count> | <verb> <noun-no-count> | <verb> <pro>
+<verb> = hugged | found | saw | worshipped | missed | loved | inspected

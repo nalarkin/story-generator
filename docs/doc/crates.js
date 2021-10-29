@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["story_graph"];
+window.ALL_CRATES = ["story_gen"];

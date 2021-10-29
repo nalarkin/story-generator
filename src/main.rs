@@ -3,7 +3,7 @@
 
 use std::env;
 use std::process;
-use story_graph::Config;
+use story_gen::Config;
 
 fn main() {
   let args: Vec<String> = env::args().collect();
@@ -11,7 +11,7 @@ fn main() {
     eprintln!("Problem parsing arguments: {}", err);
     process::exit(1);
   });
-  if let Err(e) = story_graph::run(config) {
+  if let Err(e) = story_gen::run(config) {
     eprintln!("Application error: {}", e);
     process::exit(1);
   }

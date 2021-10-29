@@ -284,7 +284,7 @@ fn find_reachable(
 /// components
 /// # Example
 /// ```
-/// use story_graph::grammar::parse_subunits;
+/// use story_gen::grammar::parse_subunits;
 /// let example = parse_subunits("<id> <noun>");
 /// assert_eq!(example, vec!["<id>", "<noun>"]);
 /// ```

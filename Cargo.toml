@@ -1,18 +1,11 @@
 [package]
-name = "story_graph"
+name = "story_gen"
 version = "0.1.0"
 edition = "2018"
-
-[alias]     # command aliases
-b = "build"
-c = "check"
-t = "test"
-r = "run"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[build]
-target-dir = "docs"         # path of where to place all generated artifacts
+authors = ["Nathan Larkin <nlarkin.us@gmail.com>"]
+repository = "https://github.com/nalarkin/story-generator"
+license = "MIT"
+readme = "README.md"
 
 [dependencies]
 rand = "0.8.4"

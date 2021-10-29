@@ -1,0 +1,8 @@
+<sentence> = <np> <vp>
+<np> = <pro> | <T> <noun> | <T> <adj> <noun>
+<pro> = Mike | Sarah | Will
+<T> = the | a
+<adj> = happy | mad | sad | tired | hopeful | weary
+<noun> = dog | cat | wolf | bird
+<vp> = <verb> <T> <noun> | <verb> <T> <adj> <noun> | <verb> <adj> <pro>
+<verb> = hugged | bit | saw

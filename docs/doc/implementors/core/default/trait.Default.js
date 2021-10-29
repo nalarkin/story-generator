@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["story_graph"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.55.0/core/default/trait.Default.html\" title=\"trait core::default::Default\">Default</a> for <a class=\"struct\" href=\"story_graph/struct.Rule.html\" title=\"struct story_graph::Rule\">Rule</a>","synthetic":false,"types":["story_graph::Rule"]}];
+implementors["story_gen"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.55.0/core/default/trait.Default.html\" title=\"trait core::default::Default\">Default</a> for <a class=\"struct\" href=\"story_gen/struct.Rule.html\" title=\"struct story_gen::Rule\">Rule</a>","synthetic":false,"types":["story_gen::Rule"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
