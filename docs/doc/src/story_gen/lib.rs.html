@@ -285,111 +285,112 @@
 
 <span class="doccomment">/// Main function which runs and controls the life time of the application.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run</span>(<span class="ident">config</span>: <span class="ident">Config</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-  <span class="kw">let</span> <span class="ident">contents</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="ident">config</span>.<span class="ident">filename</span>)<span class="question-mark">?</span>;
-  <span class="kw">let</span> <span class="ident">lines</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">contents</span>.<span class="ident">split</span>(<span class="string">&quot;\n&quot;</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>();
-  <span class="kw">let</span> <span class="ident">parsed_rules</span> <span class="op">=</span> <span class="ident">parse_file</span>(<span class="kw-2">&amp;</span><span class="ident">lines</span>);
-  <span class="kw">if</span> <span class="ident">parsed_rules</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-    <span class="macro">panic!</span>(<span class="string">&quot;unable to parse file or file is empty&quot;</span>);
-  }
-  <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">grammar</span> <span class="op">=</span> <span class="ident">grammar::Grammar::new</span>();
-  <span class="ident">grammar</span>.<span class="ident">change_start_nonterminal</span>(<span class="kw-2">&amp;</span><span class="ident">parsed_rules</span>[<span class="number">0</span>].<span class="ident">left_hand</span>);
-  <span class="kw">for</span> <span class="ident">rule</span> <span class="kw">in</span> <span class="ident">parsed_rules</span> {
-    <span class="ident">grammar</span>.<span class="ident">rule_add_from_file</span>(<span class="ident">rule</span>);
-  }
-  <span class="kw">let</span> <span class="ident">unreachable</span> <span class="op">=</span> <span class="ident">grammar</span>.<span class="ident">get_unreachable_nonterminals</span>();
-  <span class="comment">// Use eprintln! so message does not get outputed to file if</span>
-  <span class="comment">// client redirects stdout to file.</span>
-  <span class="kw">match</span> <span class="ident">unreachable</span>.<span class="ident">len</span>() {
-    <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">eprintln!</span>(<span class="string">&quot;Successful grammar rules. No unreachable non-terminals.&quot;</span>),
-    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">eprintln!</span>(<span class="string">&quot;Warning: Unreachable non-terminals: {:#?}&quot;</span>, <span class="ident">unreachable</span>),
-  }
-  <span class="comment">// println!(&quot;{:#?}&quot;, grammar.rules);</span>
-  <span class="macro">eprintln!</span>(<span class="string">&quot;Generating {} sentences.&quot;</span>, <span class="ident">config</span>.<span class="ident">quantity</span>);
-  <span class="kw">let</span> <span class="ident">generated_sentences</span> <span class="op">=</span> <span class="ident">grammar</span>.<span class="ident">generate_sentences</span>(<span class="kw-2">&amp;</span><span class="ident">grammar</span>.<span class="ident">start_nonterminal</span>, <span class="ident">config</span>.<span class="ident">quantity</span>);
-  <span class="kw">let</span> <span class="ident">generated_paragraphs</span> <span class="op">=</span>
-    <span class="ident">convert_sentences_to_paragraphs</span>(<span class="kw-2">&amp;</span><span class="ident">generated_sentences</span>, <span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">paragraph_length</span>);
-  <span class="kw">for</span> <span class="ident">paragraph</span> <span class="kw">in</span> <span class="ident">generated_paragraphs</span> {
-    <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">paragraph</span>);
-  }
-  <span class="prelude-val">Ok</span>(())
+    <span class="kw">let</span> <span class="ident">contents</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="ident">config</span>.<span class="ident">filename</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">lines</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">contents</span>.<span class="ident">split</span>(<span class="string">&quot;\n&quot;</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+    <span class="kw">let</span> <span class="ident">parsed_rules</span> <span class="op">=</span> <span class="ident">parse_file</span>(<span class="kw-2">&amp;</span><span class="ident">lines</span>);
+    <span class="kw">if</span> <span class="ident">parsed_rules</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+        <span class="macro">panic!</span>(<span class="string">&quot;unable to parse file or file is empty&quot;</span>);
+    }
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">grammar</span> <span class="op">=</span> <span class="ident">grammar::Grammar::new</span>();
+    <span class="ident">grammar</span>.<span class="ident">change_start_nonterminal</span>(<span class="kw-2">&amp;</span><span class="ident">parsed_rules</span>[<span class="number">0</span>].<span class="ident">left_hand</span>);
+    <span class="kw">for</span> <span class="ident">rule</span> <span class="kw">in</span> <span class="ident">parsed_rules</span> {
+        <span class="ident">grammar</span>.<span class="ident">rule_add_from_file</span>(<span class="ident">rule</span>);
+    }
+    <span class="kw">let</span> <span class="ident">unreachable</span> <span class="op">=</span> <span class="ident">grammar</span>.<span class="ident">get_unreachable_nonterminals</span>();
+    <span class="comment">// Use eprintln! so message does not get outputed to file if</span>
+    <span class="comment">// client redirects stdout to file.</span>
+    <span class="kw">match</span> <span class="ident">unreachable</span>.<span class="ident">len</span>() {
+        <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">eprintln!</span>(<span class="string">&quot;Successful grammar rules. All non-terminals are reachable.&quot;</span>),
+        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">eprintln!</span>(<span class="string">&quot;Warning: Unreachable non-terminals: {:#?}&quot;</span>, <span class="ident">unreachable</span>),
+    }
+    <span class="comment">// println!(&quot;{:#?}&quot;, grammar.rules);</span>
+    <span class="macro">eprintln!</span>(<span class="string">&quot;Generating {} sentences.&quot;</span>, <span class="ident">config</span>.<span class="ident">quantity</span>);
+    <span class="kw">let</span> <span class="ident">generated_sentences</span> <span class="op">=</span>
+        <span class="ident">grammar</span>.<span class="ident">generate_sentences</span>(<span class="kw-2">&amp;</span><span class="ident">grammar</span>.<span class="ident">start_nonterminal</span>, <span class="ident">config</span>.<span class="ident">quantity</span>);
+    <span class="kw">let</span> <span class="ident">generated_paragraphs</span> <span class="op">=</span>
+        <span class="ident">convert_sentences_to_paragraphs</span>(<span class="kw-2">&amp;</span><span class="ident">generated_sentences</span>, <span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">paragraph_length</span>);
+    <span class="kw">for</span> <span class="ident">paragraph</span> <span class="kw">in</span> <span class="ident">generated_paragraphs</span> {
+        <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">paragraph</span>);
+    }
+    <span class="prelude-val">Ok</span>(())
 }
 
 <span class="doccomment">/// Validates the command line arguments, and stores their values.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Config</span> {
-  <span class="kw">pub</span> <span class="ident">filename</span>: <span class="ident">String</span>,
-  <span class="kw">pub</span> <span class="ident">quantity</span>: <span class="ident">i32</span>,
-  <span class="kw">pub</span> <span class="ident">start_nonterminal</span>: <span class="ident">String</span>,
-  <span class="kw">pub</span> <span class="ident">paragraph_length</span>: <span class="ident">i32</span>,
+    <span class="kw">pub</span> <span class="ident">filename</span>: <span class="ident">String</span>,
+    <span class="kw">pub</span> <span class="ident">quantity</span>: <span class="ident">i32</span>,
+    <span class="kw">pub</span> <span class="ident">start_nonterminal</span>: <span class="ident">String</span>,
+    <span class="kw">pub</span> <span class="ident">paragraph_length</span>: <span class="ident">i32</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Config</span> {
-  <span class="doccomment">/// Given CLI arguments, parse and validate the arguments.</span>
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">args</span>: <span class="kw-2">&amp;</span>[<span class="ident">String</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Config</span>, <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">args</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">3</span> {
-      <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;not enough arguments&quot;</span>);
-    }
+    <span class="doccomment">/// Given CLI arguments, parse and validate the arguments.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">args</span>: <span class="kw-2">&amp;</span>[<span class="ident">String</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Config</span>, <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="ident">args</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">3</span> {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;not enough arguments&quot;</span>);
+        }
 
-    <span class="kw">let</span> <span class="ident">filename</span> <span class="op">=</span> <span class="ident">args</span>[<span class="number">1</span>].<span class="ident">clone</span>();
-    <span class="comment">// Raise error if 3rd argument is not an integer.</span>
-    <span class="kw">let</span> <span class="ident">quantity</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>[<span class="number">2</span>].<span class="ident">clone</span>().<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>() {
-      <span class="prelude-val">Ok</span>(<span class="ident">i</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">i</span>,
-      <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;third argument was not an integer&quot;</span>),
-    };
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">paragraph_length</span> <span class="op">=</span> <span class="number">1</span>;
-    <span class="comment">// Raise error if 4th argument is not an integer</span>
-    <span class="kw">if</span> <span class="ident">args</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">4</span> {
-      <span class="ident">paragraph_length</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>[<span class="number">3</span>].<span class="ident">clone</span>().<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>() {
-        <span class="prelude-val">Ok</span>(<span class="ident">i</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">i</span>,
-        <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;fourth argument was not an integer&quot;</span>),
-      }
-    }
+        <span class="kw">let</span> <span class="ident">filename</span> <span class="op">=</span> <span class="ident">args</span>[<span class="number">1</span>].<span class="ident">clone</span>();
+        <span class="comment">// Raise error if 3rd argument is not an integer.</span>
+        <span class="kw">let</span> <span class="ident">quantity</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>[<span class="number">2</span>].<span class="ident">clone</span>().<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>() {
+            <span class="prelude-val">Ok</span>(<span class="ident">i</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">i</span>,
+            <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;third argument was not an integer&quot;</span>),
+        };
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">paragraph_length</span> <span class="op">=</span> <span class="number">1</span>;
+        <span class="comment">// Raise error if 4th argument is not an integer</span>
+        <span class="kw">if</span> <span class="ident">args</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">4</span> {
+            <span class="ident">paragraph_length</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>[<span class="number">3</span>].<span class="ident">clone</span>().<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>() {
+                <span class="prelude-val">Ok</span>(<span class="ident">i</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">i</span>,
+                <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;fourth argument was not an integer&quot;</span>),
+            }
+        }
 
-    <span class="prelude-val">Ok</span>(<span class="ident">Config</span> {
-      <span class="ident">filename</span>,
-      <span class="ident">quantity</span>,
-      <span class="ident">start_nonterminal</span>: <span class="ident">String::new</span>(),
-      <span class="ident">paragraph_length</span>,
-    })
-  }
+        <span class="prelude-val">Ok</span>(<span class="ident">Config</span> {
+            <span class="ident">filename</span>,
+            <span class="ident">quantity</span>,
+            <span class="ident">start_nonterminal</span>: <span class="ident">String::new</span>(),
+            <span class="ident">paragraph_length</span>,
+        })
+    }
 }
 
 <span class="doccomment">/// Converts generated sentences into paragraphs of given sentence length</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">convert_sentences_to_paragraphs</span>(<span class="ident">slice</span>: <span class="kw-2">&amp;</span>[<span class="ident">String</span>], <span class="ident">length</span>: <span class="kw-2">&amp;</span><span class="ident">i32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-  <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">paragraphs</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-  <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">idx</span> <span class="op">=</span> <span class="number">0</span>;
-  <span class="kw">while</span> <span class="ident">idx</span> <span class="op">&lt;</span> <span class="ident">slice</span>.<span class="ident">len</span>() {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">count</span> <span class="op">=</span> <span class="number">0</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">single_paragraph</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-    <span class="kw">while</span> <span class="ident">count</span> <span class="op">+</span> <span class="ident">idx</span> <span class="op">&lt;</span> <span class="ident">slice</span>.<span class="ident">len</span>() <span class="op">&amp;&amp;</span> <span class="ident">count</span> <span class="op">&lt;</span> <span class="kw-2">*</span><span class="ident">length</span> <span class="kw">as</span> <span class="ident">usize</span> {
-      <span class="ident">single_paragraph</span>.<span class="ident">push</span>(<span class="ident">slice</span>[<span class="ident">count</span> <span class="op">+</span> <span class="ident">idx</span>].<span class="ident">clone</span>());
-      <span class="ident">count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">paragraphs</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">idx</span> <span class="op">=</span> <span class="number">0</span>;
+    <span class="kw">while</span> <span class="ident">idx</span> <span class="op">&lt;</span> <span class="ident">slice</span>.<span class="ident">len</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">count</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">single_paragraph</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+        <span class="kw">while</span> <span class="ident">count</span> <span class="op">+</span> <span class="ident">idx</span> <span class="op">&lt;</span> <span class="ident">slice</span>.<span class="ident">len</span>() <span class="op">&amp;&amp;</span> <span class="ident">count</span> <span class="op">&lt;</span> <span class="kw-2">*</span><span class="ident">length</span> <span class="kw">as</span> <span class="ident">usize</span> {
+            <span class="ident">single_paragraph</span>.<span class="ident">push</span>(<span class="ident">slice</span>[<span class="ident">count</span> <span class="op">+</span> <span class="ident">idx</span>].<span class="ident">clone</span>());
+            <span class="ident">count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+        }
+        <span class="ident">idx</span> <span class="op">+</span><span class="op">=</span> <span class="ident">count</span>;
+        <span class="ident">paragraphs</span>.<span class="ident">push</span>(<span class="ident">single_paragraph</span>.<span class="ident">join</span>(<span class="string">&quot; &quot;</span>));
     }
-    <span class="ident">idx</span> <span class="op">+</span><span class="op">=</span> <span class="ident">count</span>;
-    <span class="ident">paragraphs</span>.<span class="ident">push</span>(<span class="ident">single_paragraph</span>.<span class="ident">join</span>(<span class="string">&quot; &quot;</span>));
-  }
-  <span class="ident">paragraphs</span>
+    <span class="ident">paragraphs</span>
 }
 
 <span class="doccomment">/// Convert lines from a file into grammar rules</span>
 <span class="doccomment">/// Program exits if any lines do not follow the rules listed in the README.md</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_file</span>(<span class="ident">lines</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Rule</span><span class="op">&gt;</span> {
-  <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rules</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-  <span class="kw">for</span> (<span class="ident">line_num</span>, <span class="ident">line</span>) <span class="kw">in</span> <span class="ident">lines</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">should_ignore_line</span>(<span class="ident">line</span>) {
-      <span class="kw">let</span> <span class="ident">built_rule</span> <span class="op">=</span> <span class="ident">Rule::new</span>(<span class="kw-2">&amp;</span><span class="ident">line</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> {
-        <span class="macro">eprintln!</span>(<span class="string">&quot;Problem parsing line {}: {}&quot;</span>, <span class="ident">line_num</span> <span class="kw">as</span> <span class="ident">i32</span>, <span class="ident">err</span>);
-        <span class="macro">eprintln!</span>(<span class="string">&quot;line&#39;s content is: &#39;{}&#39;&quot;</span>, <span class="ident">line</span>);
-        <span class="ident">process::exit</span>(<span class="number">1</span>);
-      });
-      <span class="ident">rules</span>.<span class="ident">push</span>(<span class="ident">built_rule</span>);
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rules</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+    <span class="kw">for</span> (<span class="ident">line_num</span>, <span class="ident">line</span>) <span class="kw">in</span> <span class="ident">lines</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">should_ignore_line</span>(<span class="ident">line</span>) {
+            <span class="kw">let</span> <span class="ident">built_rule</span> <span class="op">=</span> <span class="ident">Rule::new</span>(<span class="kw-2">&amp;</span><span class="ident">line</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> {
+                <span class="macro">eprintln!</span>(<span class="string">&quot;Problem parsing line {}: {}&quot;</span>, <span class="ident">line_num</span> <span class="kw">as</span> <span class="ident">i32</span>, <span class="ident">err</span>);
+                <span class="macro">eprintln!</span>(<span class="string">&quot;line&#39;s content is: &#39;{}&#39;&quot;</span>, <span class="ident">line</span>);
+                <span class="ident">process::exit</span>(<span class="number">1</span>);
+            });
+            <span class="ident">rules</span>.<span class="ident">push</span>(<span class="ident">built_rule</span>);
+        }
     }
-  }
-  <span class="ident">rules</span>
+    <span class="ident">rules</span>
 }
 
 <span class="kw">fn</span> <span class="ident">should_ignore_line</span>(<span class="ident">line</span>: <span class="op">&amp;&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-  <span class="ident">line</span>.<span class="ident">trim</span>().<span class="ident">is_empty</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">line</span>.<span class="ident">trim</span>().<span class="ident">starts_with</span>(<span class="string">&quot;//&quot;</span>)
+    <span class="ident">line</span>.<span class="ident">trim</span>().<span class="ident">is_empty</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">line</span>.<span class="ident">trim</span>().<span class="ident">starts_with</span>(<span class="string">&quot;//&quot;</span>)
 }
 
 <span class="doccomment">/// Represents a grammar rule formed from a single line in the file provided.</span>
@@ -408,27 +409,27 @@
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Rule</span> {
-  <span class="kw">pub</span> <span class="ident">left_hand</span>: <span class="ident">String</span>,
-  <span class="kw">pub</span> <span class="ident">right_hand</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">left_hand</span>: <span class="ident">String</span>,
+    <span class="kw">pub</span> <span class="ident">right_hand</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 }
 <span class="kw">impl</span> <span class="ident">Rule</span> {
-  <span class="doccomment">/// Takes a line of the file following a specific notation,</span>
-  <span class="doccomment">/// and parses the line, and applies the necessary transformations</span>
-  <span class="doccomment">/// to convert it into a rule.</span>
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Rule</span>, <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">line</span>.<span class="ident">split</span>(<span class="string">&quot;=&quot;</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>();
-    <span class="kw">if</span> <span class="ident">parsed</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">2</span> {
-      <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;line doesn&#39;t contain &#39;=&quot;</span>);
+    <span class="doccomment">/// Takes a line of the file following a specific notation,</span>
+    <span class="doccomment">/// and parses the line, and applies the necessary transformations</span>
+    <span class="doccomment">/// to convert it into a rule.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Rule</span>, <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">line</span>.<span class="ident">split</span>(<span class="string">&quot;=&quot;</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+        <span class="kw">if</span> <span class="ident">parsed</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">2</span> {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;line doesn&#39;t contain &#39;=&quot;</span>);
+        }
+        <span class="kw">let</span> <span class="ident">left_hand</span> <span class="op">=</span> <span class="ident">String::from</span>(<span class="ident">parsed</span>[<span class="number">0</span>].<span class="ident">trim</span>());
+        <span class="kw">let</span> <span class="ident">right_unparsed</span> <span class="op">=</span> <span class="ident">String::from</span>(<span class="ident">parsed</span>[<span class="number">1</span>].<span class="ident">trim</span>());
+        <span class="kw">let</span> <span class="ident">temp_right_hand</span> <span class="op">=</span> <span class="ident">parse_right_hand_side</span>(<span class="kw-2">&amp;</span><span class="ident">right_unparsed</span>);
+        <span class="kw">let</span> <span class="ident">right_hand</span> <span class="op">=</span> <span class="ident">process_rhs_optional_combinations</span>(<span class="kw-2">&amp;</span><span class="ident">temp_right_hand</span>);
+        <span class="prelude-val">Ok</span>(<span class="ident">Rule</span> {
+            <span class="ident">left_hand</span>,
+            <span class="ident">right_hand</span>,
+        })
     }
-    <span class="kw">let</span> <span class="ident">left_hand</span> <span class="op">=</span> <span class="ident">String::from</span>(<span class="ident">parsed</span>[<span class="number">0</span>].<span class="ident">trim</span>());
-    <span class="kw">let</span> <span class="ident">right_unparsed</span> <span class="op">=</span> <span class="ident">String::from</span>(<span class="ident">parsed</span>[<span class="number">1</span>].<span class="ident">trim</span>());
-    <span class="kw">let</span> <span class="ident">temp_right_hand</span> <span class="op">=</span> <span class="ident">parse_right_hand_side</span>(<span class="kw-2">&amp;</span><span class="ident">right_unparsed</span>);
-    <span class="kw">let</span> <span class="ident">right_hand</span> <span class="op">=</span> <span class="ident">process_rhs_optional_combinations</span>(<span class="kw-2">&amp;</span><span class="ident">temp_right_hand</span>);
-    <span class="prelude-val">Ok</span>(<span class="ident">Rule</span> {
-      <span class="ident">left_hand</span>,
-      <span class="ident">right_hand</span>,
-    })
-  }
 }
 
 <span class="doccomment">/// Converts the RHS vector into representing all possible combinations of</span>
@@ -438,67 +439,66 @@
 <span class="doccomment">/// If there are optional tokens, then the number of options that will</span>
 <span class="doccomment">/// be generated is equal to 2^n, where n is the number of optional tokens.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">process_rhs_optional_combinations</span>(<span class="ident">right_hand</span>: <span class="kw-2">&amp;</span>[<span class="ident">String</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-  <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">options</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-  <span class="kw">for</span> <span class="ident">op</span> <span class="kw">in</span> <span class="ident">right_hand</span> {
-    <span class="kw">let</span> <span class="ident">sub_units</span> <span class="op">=</span> <span class="ident">grammar::parse_subunits</span>(<span class="ident">op</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">perm</span> <span class="op">=</span> <span class="ident">Combinations::new</span>();
-    <span class="kw">for</span> <span class="ident">s</span> <span class="kw">in</span> <span class="ident">sub_units</span> {
-      <span class="kw">let</span> <span class="ident">trimmed</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">trim</span>();
-      <span class="kw">if</span> <span class="ident">trimmed</span>.<span class="ident">starts_with</span>(<span class="string">&#39;(&#39;</span>) <span class="op">&amp;&amp;</span> <span class="ident">trimmed</span>.<span class="ident">ends_with</span>(<span class="string">&#39;)&#39;</span>) {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">without_paren</span> <span class="op">=</span> <span class="ident">trimmed</span>.<span class="ident">chars</span>();
-        <span class="ident">without_paren</span>.<span class="ident">next</span>(); <span class="comment">// remove opening parenth</span>
-        <span class="ident">without_paren</span>.<span class="ident">next_back</span>(); <span class="comment">// remove closing parenth</span>
-        <span class="ident">perm</span>.<span class="ident">add_optional</span>(<span class="ident">without_paren</span>.<span class="ident">as_str</span>());
-      } <span class="kw">else</span> {
-        <span class="ident">perm</span>.<span class="ident">add_required</span>(<span class="ident">trimmed</span>);
-      }
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">options</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+    <span class="kw">for</span> <span class="ident">op</span> <span class="kw">in</span> <span class="ident">right_hand</span> {
+        <span class="kw">let</span> <span class="ident">sub_units</span> <span class="op">=</span> <span class="ident">grammar::parse_subunits</span>(<span class="ident">op</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">perm</span> <span class="op">=</span> <span class="ident">Combinations::new</span>();
+        <span class="kw">for</span> <span class="ident">s</span> <span class="kw">in</span> <span class="ident">sub_units</span> {
+            <span class="kw">let</span> <span class="ident">trimmed</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">trim</span>();
+            <span class="kw">if</span> <span class="ident">trimmed</span>.<span class="ident">starts_with</span>(<span class="string">&#39;(&#39;</span>) <span class="op">&amp;&amp;</span> <span class="ident">trimmed</span>.<span class="ident">ends_with</span>(<span class="string">&#39;)&#39;</span>) {
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">without_paren</span> <span class="op">=</span> <span class="ident">trimmed</span>.<span class="ident">chars</span>();
+                <span class="ident">without_paren</span>.<span class="ident">next</span>(); <span class="comment">// remove opening parenth</span>
+                <span class="ident">without_paren</span>.<span class="ident">next_back</span>(); <span class="comment">// remove closing parenth</span>
+                <span class="ident">perm</span>.<span class="ident">add_optional</span>(<span class="ident">without_paren</span>.<span class="ident">as_str</span>());
+            } <span class="kw">else</span> {
+                <span class="ident">perm</span>.<span class="ident">add_required</span>(<span class="ident">trimmed</span>);
+            }
+        }
+        <span class="ident">options</span>.<span class="ident">extend</span>(
+            <span class="ident">perm</span>.<span class="ident">options</span>
+                .<span class="ident">iter</span>()
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">String::from</span>(<span class="ident">x</span>.<span class="ident">trim</span>()))
+                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
+        );
     }
-    <span class="ident">options</span>.<span class="ident">extend</span>(
-      <span class="ident">perm</span>
-        .<span class="ident">options</span>
-        .<span class="ident">iter</span>()
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">String::from</span>(<span class="ident">x</span>.<span class="ident">trim</span>()))
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
-    );
-  }
-  <span class="ident">options</span>
+    <span class="ident">options</span>
 }
 
 <span class="doccomment">/// Used to encapsulate combinatorics logic for optional tokens.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Combinations</span> {
-  <span class="kw">pub</span> <span class="ident">options</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">options</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 }
 <span class="kw">impl</span> <span class="ident">Combinations</span> {
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Combinations</span> {
-    <span class="ident">Combinations</span> {
-      <span class="ident">options</span>: <span class="macro">vec!</span>[<span class="ident">String::from</span>(<span class="string">&quot;&quot;</span>)],
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Combinations</span> {
+        <span class="ident">Combinations</span> {
+            <span class="ident">options</span>: <span class="macro">vec!</span>[<span class="ident">String::from</span>(<span class="string">&quot;&quot;</span>)],
+        }
     }
-  }
-  <span class="doccomment">/// Add an optional token to the existing options. Each call on this method</span>
-  <span class="doccomment">/// increases the number of options on the RHS by a factor of 2.</span>
-  <span class="doccomment">/// For example, if there are currently 4 options, and an optional</span>
-  <span class="doccomment">/// token is added, then after this method is complete, 8 options will exist.</span>
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_optional</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">optional</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
-    <span class="comment">// for every optional token, it can either be added, or not added.</span>
-    <span class="comment">// The &#39;modified&#39; vec represents the times it&#39;s added.</span>
-    <span class="kw">let</span> <span class="ident">modified</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="self">self</span>
-      .<span class="ident">options</span>
-      .<span class="ident">iter</span>()
-      .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;{} {}&quot;</span>, <span class="ident">x</span>, <span class="ident">optional</span>))
-      .<span class="ident">collect</span>();
-    <span class="self">self</span>.<span class="ident">options</span>.<span class="ident">extend</span>(<span class="ident">modified</span>); <span class="comment">// vector length is doubled</span>
-  }
-  <span class="doccomment">/// Add a required token to all existing options. Every option must</span>
-  <span class="doccomment">/// include this token.</span>
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_required</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">required</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
-    <span class="kw">let</span> <span class="ident">modified</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="self">self</span>
-      .<span class="ident">options</span>
-      .<span class="ident">iter</span>()
-      .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;{} {}&quot;</span>, <span class="ident">x</span>, <span class="ident">required</span>))
-      .<span class="ident">collect</span>();
-    <span class="self">self</span>.<span class="ident">options</span> <span class="op">=</span> <span class="ident">modified</span>;
-  }
+    <span class="doccomment">/// Add an optional token to the existing options. Each call on this method</span>
+    <span class="doccomment">/// increases the number of options on the RHS by a factor of 2.</span>
+    <span class="doccomment">/// For example, if there are currently 4 options, and an optional</span>
+    <span class="doccomment">/// token is added, then after this method is complete, 8 options will exist.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_optional</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">optional</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
+        <span class="comment">// for every optional token, it can either be added, or not added.</span>
+        <span class="comment">// The &#39;modified&#39; vec represents the times it&#39;s added.</span>
+        <span class="kw">let</span> <span class="ident">modified</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">options</span>
+            .<span class="ident">iter</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;{} {}&quot;</span>, <span class="ident">x</span>, <span class="ident">optional</span>))
+            .<span class="ident">collect</span>();
+        <span class="self">self</span>.<span class="ident">options</span>.<span class="ident">extend</span>(<span class="ident">modified</span>); <span class="comment">// vector length is doubled</span>
+    }
+    <span class="doccomment">/// Add a required token to all existing options. Every option must</span>
+    <span class="doccomment">/// include this token.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_required</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">required</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
+        <span class="kw">let</span> <span class="ident">modified</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">options</span>
+            .<span class="ident">iter</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;{} {}&quot;</span>, <span class="ident">x</span>, <span class="ident">required</span>))
+            .<span class="ident">collect</span>();
+        <span class="self">self</span>.<span class="ident">options</span> <span class="op">=</span> <span class="ident">modified</span>;
+    }
 }
 
 <span class="doccomment">/// Parses the string that that is to the rigth of the equal sign delimiter</span>
@@ -509,41 +509,41 @@
 <span class="doccomment">/// assert_eq!(parse_right_hand_side(&quot;bag | dog cat&quot;),vec![&quot;bag&quot;, &quot;dog cat&quot;]);</span>
 <span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_right_hand_side</span>(<span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-  <span class="kw">let</span> <span class="ident">parsed</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">rhs</span>
-    .<span class="ident">split</span>(<span class="string">&quot;|&quot;</span>)
-    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>()
-    .<span class="ident">iter</span>()
-    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">String::from</span>(<span class="ident">x</span>.<span class="ident">trim</span>()))
-    .<span class="ident">collect</span>();
-  <span class="ident">parsed</span>
+    <span class="kw">let</span> <span class="ident">parsed</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">rhs</span>
+        .<span class="ident">split</span>(<span class="string">&quot;|&quot;</span>)
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>()
+        .<span class="ident">iter</span>()
+        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">String::from</span>(<span class="ident">x</span>.<span class="ident">trim</span>()))
+        .<span class="ident">collect</span>();
+    <span class="ident">parsed</span>
 }
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
-  <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-  <span class="attribute">#[<span class="ident">test</span>]</span>
-  <span class="kw">fn</span> <span class="ident">parse_rhs_simple</span>() {
-    <span class="macro">assert_eq!</span>(<span class="ident">parse_right_hand_side</span>(<span class="string">&quot;bag | dog&quot;</span>), <span class="macro">vec!</span>[<span class="string">&quot;bag&quot;</span>, <span class="string">&quot;dog&quot;</span>]);
-  }
-  <span class="attribute">#[<span class="ident">test</span>]</span>
-  <span class="kw">fn</span> <span class="ident">parse_rhs</span>() {
-    <span class="macro">assert_eq!</span>(
-      <span class="ident">parse_right_hand_side</span>(<span class="string">&quot;bag | dog cat&quot;</span>),
-      <span class="macro">vec!</span>[<span class="string">&quot;bag&quot;</span>, <span class="string">&quot;dog cat&quot;</span>]
-    );
-  }
-  <span class="attribute">#[<span class="ident">test</span>]</span>
-  <span class="kw">fn</span> <span class="ident">test_rule</span>() {
-    <span class="kw">let</span> <span class="ident">example</span> <span class="op">=</span> <span class="ident">Rule::new</span>(<span class="string">&quot;noun = cat | dog&quot;</span>).<span class="ident">unwrap_or</span>(<span class="ident">Rule::default</span>());
-    <span class="macro">assert_eq!</span>(<span class="ident">example</span>.<span class="ident">left_hand</span>, <span class="string">&quot;noun&quot;</span>);
-    <span class="macro">assert_eq!</span>(<span class="ident">example</span>.<span class="ident">right_hand</span>, <span class="macro">vec!</span>[<span class="string">&quot;cat&quot;</span>, <span class="string">&quot;dog&quot;</span>]);
-  }
-  <span class="attribute">#[<span class="ident">test</span>]</span>
-  <span class="kw">fn</span> <span class="ident">test_rule_fails</span>() {
-    <span class="kw">let</span> <span class="ident">example_failure</span> <span class="op">=</span> <span class="ident">Rule::new</span>(<span class="string">&quot;noun cat | dog&quot;</span>).<span class="ident">unwrap_or</span>(<span class="ident">Rule::default</span>());
-    <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="ident">Rule::default</span>();
-    <span class="macro">assert_eq!</span>(<span class="ident">example_failure</span>.<span class="ident">left_hand</span>, <span class="ident">example_failure</span>.<span class="ident">left_hand</span>);
-    <span class="macro">assert_eq!</span>(<span class="ident">example_failure</span>.<span class="ident">right_hand</span>, <span class="ident">expected</span>.<span class="ident">right_hand</span>);
-  }
+    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_rhs_simple</span>() {
+        <span class="macro">assert_eq!</span>(<span class="ident">parse_right_hand_side</span>(<span class="string">&quot;bag | dog&quot;</span>), <span class="macro">vec!</span>[<span class="string">&quot;bag&quot;</span>, <span class="string">&quot;dog&quot;</span>]);
+    }
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_rhs</span>() {
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">parse_right_hand_side</span>(<span class="string">&quot;bag | dog cat&quot;</span>),
+            <span class="macro">vec!</span>[<span class="string">&quot;bag&quot;</span>, <span class="string">&quot;dog cat&quot;</span>]
+        );
+    }
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_rule</span>() {
+        <span class="kw">let</span> <span class="ident">example</span> <span class="op">=</span> <span class="ident">Rule::new</span>(<span class="string">&quot;noun = cat | dog&quot;</span>).<span class="ident">unwrap_or</span>(<span class="ident">Rule::default</span>());
+        <span class="macro">assert_eq!</span>(<span class="ident">example</span>.<span class="ident">left_hand</span>, <span class="string">&quot;noun&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">example</span>.<span class="ident">right_hand</span>, <span class="macro">vec!</span>[<span class="string">&quot;cat&quot;</span>, <span class="string">&quot;dog&quot;</span>]);
+    }
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_rule_fails</span>() {
+        <span class="kw">let</span> <span class="ident">example_failure</span> <span class="op">=</span> <span class="ident">Rule::new</span>(<span class="string">&quot;noun cat | dog&quot;</span>).<span class="ident">unwrap_or</span>(<span class="ident">Rule::default</span>());
+        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="ident">Rule::default</span>();
+        <span class="macro">assert_eq!</span>(<span class="ident">example_failure</span>.<span class="ident">left_hand</span>, <span class="ident">example_failure</span>.<span class="ident">left_hand</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">example_failure</span>.<span class="ident">right_hand</span>, <span class="ident">expected</span>.<span class="ident">right_hand</span>);
+    }
 }
 </pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="story_gen" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
