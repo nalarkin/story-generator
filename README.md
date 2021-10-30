@@ -102,7 +102,7 @@ Trees are defined as graphs which have the minimum number of edges connecting al
 
 Rust has built in documentation features that create static HTML code.
 
-The command I used was `cargo doc --no-deps --target-dir ./docs `.
+The command I used was `cargo fmt;cargo doc --no-deps --target-dir ./docs `.
 
 ### How did you create the executable file?
 

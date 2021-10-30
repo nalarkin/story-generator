@@ -271,10 +271,23 @@
 <span id="271">271</span>
 <span id="272">272</span>
 <span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
 </pre><pre class="rust">
 <span class="doccomment">//! This module contains most of the business logic required to run the</span>
 <span class="doccomment">//! application and for error handling.</span>
-
+<span class="kw">use</span> <span class="ident">std::env</span>;
 <span class="kw">use</span> <span class="ident">std::error::Error</span>;
 <span class="kw">use</span> <span class="ident">std::fs</span>;
 <span class="kw">use</span> <span class="ident">std::process</span>;
@@ -286,8 +299,8 @@
 <span class="doccomment">/// Main function which runs and controls the life time of the application.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run</span>(<span class="ident">config</span>: <span class="ident">Config</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">contents</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="ident">config</span>.<span class="ident">filename</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">lines</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">contents</span>.<span class="ident">split</span>(<span class="string">&quot;\n&quot;</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>();
-    <span class="kw">let</span> <span class="ident">parsed_rules</span> <span class="op">=</span> <span class="ident">parse_file</span>(<span class="kw-2">&amp;</span><span class="ident">lines</span>);
+    <span class="comment">// let lines = &amp;contents.split(&quot;\n&quot;).collect::&lt;Vec&lt;&amp;str&gt;&gt;();</span>
+    <span class="kw">let</span> <span class="ident">parsed_rules</span> <span class="op">=</span> <span class="ident">parse_file</span>(<span class="kw-2">&amp;</span><span class="ident">contents</span>);
     <span class="kw">if</span> <span class="ident">parsed_rules</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
         <span class="macro">panic!</span>(<span class="string">&quot;unable to parse file or file is empty&quot;</span>);
     }
@@ -325,32 +338,43 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Config</span> {
-    <span class="doccomment">/// Given CLI arguments, parse and validate the arguments.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">args</span>: <span class="kw-2">&amp;</span>[<span class="ident">String</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Config</span>, <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">args</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">3</span> {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;not enough arguments&quot;</span>);
-        }
-
-        <span class="kw">let</span> <span class="ident">filename</span> <span class="op">=</span> <span class="ident">args</span>[<span class="number">1</span>].<span class="ident">clone</span>();
-        <span class="comment">// Raise error if 3rd argument is not an integer.</span>
-        <span class="kw">let</span> <span class="ident">quantity</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>[<span class="number">2</span>].<span class="ident">clone</span>().<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>() {
-            <span class="prelude-val">Ok</span>(<span class="ident">i</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">i</span>,
-            <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;third argument was not an integer&quot;</span>),
+    <span class="doccomment">/// Given CLI arguments, parse and validate the arguments. Takes an iterator of</span>
+    <span class="doccomment">/// the env::Args to explicitly describe the info in used for creation.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="kw-2">mut</span> <span class="ident">args</span>: <span class="ident">env::Args</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Config</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> {
+        <span class="ident">args</span>.<span class="ident">next</span>(); <span class="comment">// first arg not needed</span>
+        <span class="kw">let</span> <span class="ident">filename</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>.<span class="ident">next</span>() {
+            <span class="prelude-val">Some</span>(<span class="ident">arg</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">arg</span>,
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Didn&#39;t get a file name&quot;</span>),
         };
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">paragraph_length</span> <span class="op">=</span> <span class="number">1</span>;
-        <span class="comment">// Raise error if 4th argument is not an integer</span>
-        <span class="kw">if</span> <span class="ident">args</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">4</span> {
-            <span class="ident">paragraph_length</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>[<span class="number">3</span>].<span class="ident">clone</span>().<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>() {
-                <span class="prelude-val">Ok</span>(<span class="ident">i</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">i</span>,
-                <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;fourth argument was not an integer&quot;</span>),
-            }
-        }
+        <span class="kw">let</span> <span class="ident">quantity</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>.<span class="ident">next</span>() {
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Didn&#39;t get a sentence count&quot;</span>),
+            <span class="comment">// Raise error if 3rd argument is not an integer.</span>
+            <span class="prelude-val">Some</span>(<span class="ident">arg</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">arg</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>() {
+                <span class="prelude-val">Ok</span>(<span class="ident">i</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">i</span> <span class="op">&gt;</span> <span class="number">0</span> {
+                    <span class="bool-val">true</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">i</span>,
+                    <span class="bool-val">false</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Third argument must be positive integer.&quot;</span>),
+                },
+                <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Third argument was not an integer.&quot;</span>),
+            },
+        };
+        <span class="kw">let</span> <span class="ident">paragraph_length</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">args</span>.<span class="ident">next</span>() {
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">1</span>, <span class="comment">// default</span>
+            <span class="comment">// convert to int</span>
+            <span class="prelude-val">Some</span>(<span class="ident">arg</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">arg</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>() {
+                <span class="prelude-val">Ok</span>(<span class="ident">i</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">i</span> <span class="op">&gt;</span> <span class="number">0</span> {
+                    <span class="bool-val">true</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">i</span>,
+                    <span class="bool-val">false</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Fourth argument must be positive integer.&quot;</span>),
+                },
+                <span class="comment">// Raise error if 4th argument is not an integer</span>
+                <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Fourth argument was not an integer.&quot;</span>),
+            },
+        };
 
         <span class="prelude-val">Ok</span>(<span class="ident">Config</span> {
             <span class="ident">filename</span>,
             <span class="ident">quantity</span>,
-            <span class="ident">start_nonterminal</span>: <span class="ident">String::new</span>(),
             <span class="ident">paragraph_length</span>,
+            <span class="ident">start_nonterminal</span>: <span class="ident">String::new</span>(),
         })
     }
 }
@@ -374,22 +398,24 @@
 
 <span class="doccomment">/// Convert lines from a file into grammar rules</span>
 <span class="doccomment">/// Program exits if any lines do not follow the rules listed in the README.md</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_file</span>(<span class="ident">lines</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Rule</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rules</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-    <span class="kw">for</span> (<span class="ident">line_num</span>, <span class="ident">line</span>) <span class="kw">in</span> <span class="ident">lines</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">should_ignore_line</span>(<span class="ident">line</span>) {
-            <span class="kw">let</span> <span class="ident">built_rule</span> <span class="op">=</span> <span class="ident">Rule::new</span>(<span class="kw-2">&amp;</span><span class="ident">line</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_file</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">content</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Rule</span><span class="op">&gt;</span> {
+    <span class="comment">// would prefer to split up the logic somewhat, but I believe this is the most</span>
+    <span class="comment">// performant way to reference the line number when errors arise.</span>
+    <span class="ident">content</span>
+        .<span class="ident">lines</span>()
+        .<span class="ident">enumerate</span>() <span class="comment">// used for errors to get line number</span>
+        .<span class="ident">filter</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">line</span>)<span class="op">|</span> <span class="op">!</span><span class="ident">should_ignore_line</span>(<span class="ident">line</span>))
+        .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">line_num</span>, <span class="ident">line</span>)<span class="op">|</span> {
+            <span class="ident">Rule::new</span>(<span class="ident">line</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> {
                 <span class="macro">eprintln!</span>(<span class="string">&quot;Problem parsing line {}: {}&quot;</span>, <span class="ident">line_num</span> <span class="kw">as</span> <span class="ident">i32</span>, <span class="ident">err</span>);
                 <span class="macro">eprintln!</span>(<span class="string">&quot;line&#39;s content is: &#39;{}&#39;&quot;</span>, <span class="ident">line</span>);
                 <span class="ident">process::exit</span>(<span class="number">1</span>);
-            });
-            <span class="ident">rules</span>.<span class="ident">push</span>(<span class="ident">built_rule</span>);
-        }
-    }
-    <span class="ident">rules</span>
+            })
+        })
+        .<span class="ident">collect</span>()
 }
 
-<span class="kw">fn</span> <span class="ident">should_ignore_line</span>(<span class="ident">line</span>: <span class="op">&amp;&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+<span class="kw">fn</span> <span class="ident">should_ignore_line</span>(<span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
     <span class="ident">line</span>.<span class="ident">trim</span>().<span class="ident">is_empty</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">line</span>.<span class="ident">trim</span>().<span class="ident">starts_with</span>(<span class="string">&quot;//&quot;</span>)
 }
 

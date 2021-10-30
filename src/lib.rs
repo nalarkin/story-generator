@@ -1,6 +1,6 @@
 //! This module contains most of the business logic required to run the
 //! application and for error handling.
-
+use std::env;
 use std::error::Error;
 use std::fs;
 use std::process;
@@ -12,8 +12,8 @@ pub mod random;
 /// Main function which runs and controls the life time of the application.
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let contents = fs::read_to_string(config.filename)?;
-    let lines = &contents.split("\n").collect::<Vec<&str>>();
-    let parsed_rules = parse_file(&lines);
+    // let lines = &contents.split("\n").collect::<Vec<&str>>();
+    let parsed_rules = parse_file(&contents);
     if parsed_rules.len() == 0 {
         panic!("unable to parse file or file is empty");
     }
@@ -51,32 +51,43 @@ pub struct Config {
 }
 
 impl Config {
-    /// Given CLI arguments, parse and validate the arguments.
-    pub fn new(args: &[String]) -> Result<Config, &str> {
-        if args.len() < 3 {
-            return Err("not enough arguments");
-        }
-
-        let filename = args[1].clone();
-        // Raise error if 3rd argument is not an integer.
-        let quantity = match args[2].clone().parse::<i32>() {
-            Ok(i) => i,
-            Err(_e) => return Err("third argument was not an integer"),
+    /// Given CLI arguments, parse and validate the arguments. Takes an iterator of
+    /// the env::Args to explicitly describe the info in used for creation.
+    pub fn new(mut args: env::Args) -> Result<Config, &'static str> {
+        args.next(); // first arg not needed
+        let filename = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a file name"),
         };
-        let mut paragraph_length = 1;
-        // Raise error if 4th argument is not an integer
-        if args.len() == 4 {
-            paragraph_length = match args[3].clone().parse::<i32>() {
-                Ok(i) => i,
-                Err(_e) => return Err("fourth argument was not an integer"),
-            }
-        }
+        let quantity = match args.next() {
+            None => return Err("Didn't get a sentence count"),
+            // Raise error if 3rd argument is not an integer.
+            Some(arg) => match arg.parse::<i32>() {
+                Ok(i) => match i > 0 {
+                    true => i,
+                    false => return Err("Third argument must be positive integer."),
+                },
+                Err(_e) => return Err("Third argument was not an integer."),
+            },
+        };
+        let paragraph_length = match args.next() {
+            None => 1, // default
+            // convert to int
+            Some(arg) => match arg.parse::<i32>() {
+                Ok(i) => match i > 0 {
+                    true => i,
+                    false => return Err("Fourth argument must be positive integer."),
+                },
+                // Raise error if 4th argument is not an integer
+                Err(_e) => return Err("Fourth argument was not an integer."),
+            },
+        };
 
         Ok(Config {
             filename,
             quantity,
-            start_nonterminal: String::new(),
             paragraph_length,
+            start_nonterminal: String::new(),
         })
     }
 }
@@ -100,22 +111,24 @@ pub fn convert_sentences_to_paragraphs(slice: &[String], length: &i32) -> Vec<St
 
 /// Convert lines from a file into grammar rules
 /// Program exits if any lines do not follow the rules listed in the README.md
-pub fn parse_file(lines: &[&str]) -> Vec<Rule> {
-    let mut rules = vec![];
-    for (line_num, line) in lines.iter().enumerate() {
-        if !should_ignore_line(line) {
-            let built_rule = Rule::new(&line).unwrap_or_else(|err| {
+pub fn parse_file<'a>(content: &'a str) -> Vec<Rule> {
+    // would prefer to split up the logic somewhat, but I believe this is the most
+    // performant way to reference the line number when errors arise.
+    content
+        .lines()
+        .enumerate() // used for errors to get line number
+        .filter(|(_, line)| !should_ignore_line(line))
+        .map(|(line_num, line)| {
+            Rule::new(line).unwrap_or_else(|err| {
                 eprintln!("Problem parsing line {}: {}", line_num as i32, err);
                 eprintln!("line's content is: '{}'", line);
                 process::exit(1);
-            });
-            rules.push(built_rule);
-        }
-    }
-    rules
+            })
+        })
+        .collect()
 }
 
-fn should_ignore_line(line: &&str) -> bool {
+fn should_ignore_line(line: &str) -> bool {
     line.trim().is_empty() || line.trim().starts_with("//")
 }
 
