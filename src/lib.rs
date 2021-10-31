@@ -33,8 +33,10 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     eprintln!("Generating {} sentences.", config.quantity);
     let generated_sentences =
         grammar.generate_sentences(&grammar.start_nonterminal, config.quantity);
+    // let generated_paragraphs =
+    //     convert_sentences_to_paragraphs(&generated_sentences, &config.paragraph_length);
     let generated_paragraphs =
-        convert_sentences_to_paragraphs(&generated_sentences, &config.paragraph_length);
+        convert_sentences_to_paragraphs(&generated_sentences, *&config.paragraph_length as usize);
     for paragraph in generated_paragraphs {
         println!("{}", paragraph);
     }
@@ -93,20 +95,20 @@ impl Config {
 }
 
 /// Converts generated sentences into paragraphs of given sentence length
-pub fn convert_sentences_to_paragraphs(slice: &[String], length: &i32) -> Vec<String> {
-    let mut paragraphs = vec![];
-    let mut idx = 0;
-    while idx < slice.len() {
-        let mut count = 0;
-        let mut single_paragraph = vec![];
-        while count + idx < slice.len() && count < *length as usize {
-            single_paragraph.push(slice[count + idx].clone());
-            count += 1;
-        }
-        idx += count;
-        paragraphs.push(single_paragraph.join(" "));
-    }
-    paragraphs
+///
+/// # Example
+/// ```
+/// use story_gen::convert_sentences_to_paragraphs;
+///
+/// let tester: Vec<String> = vec![String::from("1"), String::from("2"), String::from("3")];
+/// let expected: Vec<String> = vec![String::from("1 2"), String::from("3")];
+/// assert_eq!(convert_sentences_to_paragraphs(&tester, 2), expected);
+/// ```
+pub fn convert_sentences_to_paragraphs(slice: &[String], paragraph_length: usize) -> Vec<String> {
+    slice
+        .chunks(paragraph_length) // splits up vec into subarrays of given size
+        .map(|sentences_chunk| sentences_chunk.join(" ")) // join all sentences into a paragraph
+        .collect()
 }
 
 /// Convert lines from a file into grammar rules
@@ -282,5 +284,22 @@ mod tests {
         let expected = Rule::default();
         assert_eq!(example_failure.left_hand, example_failure.left_hand);
         assert_eq!(example_failure.right_hand, expected.right_hand);
+    }
+    #[test]
+    fn test_convert_sentences_to_paragraphs_2() {
+        let tester: Vec<String> = vec![String::from("1"), String::from("2"), String::from("3")];
+        let expected: Vec<String> = vec![String::from("1 2"), String::from("3")];
+        assert_eq!(convert_sentences_to_paragraphs(&tester, 2), expected);
+    }
+    #[test]
+    fn test_convert_sentences_to_paragraphs_1() {
+        let tester: Vec<String> = vec![String::from("1"), String::from("2"), String::from("3")];
+        assert_eq!(convert_sentences_to_paragraphs(&tester, 1), tester);
+    }
+    #[test]
+    fn test_convert_sentences_to_paragraphs_3() {
+        let tester: Vec<String> = vec![String::from("1"), String::from("2"), String::from("3")];
+        let expected: Vec<String> = vec![String::from("1 2 3")];
+        assert_eq!(convert_sentences_to_paragraphs(&tester, 3), expected);
     }
 }

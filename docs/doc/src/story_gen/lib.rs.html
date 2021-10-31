@@ -284,6 +284,25 @@
 <span id="284">284</span>
 <span id="285">285</span>
 <span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
 </pre><pre class="rust">
 <span class="doccomment">//! This module contains most of the business logic required to run the</span>
 <span class="doccomment">//! application and for error handling.</span>
@@ -320,8 +339,10 @@
     <span class="macro">eprintln!</span>(<span class="string">&quot;Generating {} sentences.&quot;</span>, <span class="ident">config</span>.<span class="ident">quantity</span>);
     <span class="kw">let</span> <span class="ident">generated_sentences</span> <span class="op">=</span>
         <span class="ident">grammar</span>.<span class="ident">generate_sentences</span>(<span class="kw-2">&amp;</span><span class="ident">grammar</span>.<span class="ident">start_nonterminal</span>, <span class="ident">config</span>.<span class="ident">quantity</span>);
+    <span class="comment">// let generated_paragraphs =</span>
+    <span class="comment">//     convert_sentences_to_paragraphs(&amp;generated_sentences, &amp;config.paragraph_length);</span>
     <span class="kw">let</span> <span class="ident">generated_paragraphs</span> <span class="op">=</span>
-        <span class="ident">convert_sentences_to_paragraphs</span>(<span class="kw-2">&amp;</span><span class="ident">generated_sentences</span>, <span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">paragraph_length</span>);
+        <span class="ident">convert_sentences_to_paragraphs</span>(<span class="kw-2">&amp;</span><span class="ident">generated_sentences</span>, <span class="kw-2">*</span><span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">paragraph_length</span> <span class="kw">as</span> <span class="ident">usize</span>);
     <span class="kw">for</span> <span class="ident">paragraph</span> <span class="kw">in</span> <span class="ident">generated_paragraphs</span> {
         <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">paragraph</span>);
     }
@@ -380,20 +401,20 @@
 }
 
 <span class="doccomment">/// Converts generated sentences into paragraphs of given sentence length</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">convert_sentences_to_paragraphs</span>(<span class="ident">slice</span>: <span class="kw-2">&amp;</span>[<span class="ident">String</span>], <span class="ident">length</span>: <span class="kw-2">&amp;</span><span class="ident">i32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">paragraphs</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">idx</span> <span class="op">=</span> <span class="number">0</span>;
-    <span class="kw">while</span> <span class="ident">idx</span> <span class="op">&lt;</span> <span class="ident">slice</span>.<span class="ident">len</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">count</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">single_paragraph</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-        <span class="kw">while</span> <span class="ident">count</span> <span class="op">+</span> <span class="ident">idx</span> <span class="op">&lt;</span> <span class="ident">slice</span>.<span class="ident">len</span>() <span class="op">&amp;&amp;</span> <span class="ident">count</span> <span class="op">&lt;</span> <span class="kw-2">*</span><span class="ident">length</span> <span class="kw">as</span> <span class="ident">usize</span> {
-            <span class="ident">single_paragraph</span>.<span class="ident">push</span>(<span class="ident">slice</span>[<span class="ident">count</span> <span class="op">+</span> <span class="ident">idx</span>].<span class="ident">clone</span>());
-            <span class="ident">count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-        }
-        <span class="ident">idx</span> <span class="op">+</span><span class="op">=</span> <span class="ident">count</span>;
-        <span class="ident">paragraphs</span>.<span class="ident">push</span>(<span class="ident">single_paragraph</span>.<span class="ident">join</span>(<span class="string">&quot; &quot;</span>));
-    }
-    <span class="ident">paragraphs</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Example</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// use story_gen::convert_sentences_to_paragraphs;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// let tester: Vec&lt;String&gt; = vec![String::from(&quot;1&quot;), String::from(&quot;2&quot;), String::from(&quot;3&quot;)];</span>
+<span class="doccomment">/// let expected: Vec&lt;String&gt; = vec![String::from(&quot;1 2&quot;), String::from(&quot;3&quot;)];</span>
+<span class="doccomment">/// assert_eq!(convert_sentences_to_paragraphs(&amp;tester, 2), expected);</span>
+<span class="doccomment">/// ```</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">convert_sentences_to_paragraphs</span>(<span class="ident">slice</span>: <span class="kw-2">&amp;</span>[<span class="ident">String</span>], <span class="ident">paragraph_length</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="ident">slice</span>
+        .<span class="ident">chunks</span>(<span class="ident">paragraph_length</span>) <span class="comment">// splits up vec into subarrays of given size</span>
+        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">sentences_chunk</span><span class="op">|</span> <span class="ident">sentences_chunk</span>.<span class="ident">join</span>(<span class="string">&quot; &quot;</span>)) <span class="comment">// join all sentences into a paragraph</span>
+        .<span class="ident">collect</span>()
 }
 
 <span class="doccomment">/// Convert lines from a file into grammar rules</span>
@@ -569,6 +590,23 @@
         <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="ident">Rule::default</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">example_failure</span>.<span class="ident">left_hand</span>, <span class="ident">example_failure</span>.<span class="ident">left_hand</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">example_failure</span>.<span class="ident">right_hand</span>, <span class="ident">expected</span>.<span class="ident">right_hand</span>);
+    }
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_convert_sentences_to_paragraphs_2</span>() {
+        <span class="kw">let</span> <span class="ident">tester</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">String::from</span>(<span class="string">&quot;1&quot;</span>), <span class="ident">String::from</span>(<span class="string">&quot;2&quot;</span>), <span class="ident">String::from</span>(<span class="string">&quot;3&quot;</span>)];
+        <span class="kw">let</span> <span class="ident">expected</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">String::from</span>(<span class="string">&quot;1 2&quot;</span>), <span class="ident">String::from</span>(<span class="string">&quot;3&quot;</span>)];
+        <span class="macro">assert_eq!</span>(<span class="ident">convert_sentences_to_paragraphs</span>(<span class="kw-2">&amp;</span><span class="ident">tester</span>, <span class="number">2</span>), <span class="ident">expected</span>);
+    }
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_convert_sentences_to_paragraphs_1</span>() {
+        <span class="kw">let</span> <span class="ident">tester</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">String::from</span>(<span class="string">&quot;1&quot;</span>), <span class="ident">String::from</span>(<span class="string">&quot;2&quot;</span>), <span class="ident">String::from</span>(<span class="string">&quot;3&quot;</span>)];
+        <span class="macro">assert_eq!</span>(<span class="ident">convert_sentences_to_paragraphs</span>(<span class="kw-2">&amp;</span><span class="ident">tester</span>, <span class="number">1</span>), <span class="ident">tester</span>);
+    }
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_convert_sentences_to_paragraphs_3</span>() {
+        <span class="kw">let</span> <span class="ident">tester</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">String::from</span>(<span class="string">&quot;1&quot;</span>), <span class="ident">String::from</span>(<span class="string">&quot;2&quot;</span>), <span class="ident">String::from</span>(<span class="string">&quot;3&quot;</span>)];
+        <span class="kw">let</span> <span class="ident">expected</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">String::from</span>(<span class="string">&quot;1 2 3&quot;</span>)];
+        <span class="macro">assert_eq!</span>(<span class="ident">convert_sentences_to_paragraphs</span>(<span class="kw-2">&amp;</span><span class="ident">tester</span>, <span class="number">3</span>), <span class="ident">expected</span>);
     }
 }
 </pre></div>
